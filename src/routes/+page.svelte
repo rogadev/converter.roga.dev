@@ -47,6 +47,11 @@
     setFile(f)
   }
 
+  function formatImageFormatLabel(format: string): string {
+    if (format === 'webp') return 'WebP'
+    return format.toUpperCase()
+  }
+
   function setFile(f: File) {
     selectedFile = f
     fileKind = detectKind(f)
@@ -55,6 +60,16 @@
     outputSize = null
     if (fileKind === 'image') {
       imageTarget = defaultTargetForImageType(f)
+      // reset image options
+      imageQuality = 0.9
+      showImageAdvanced = false
+    } else if (fileKind === 'video') {
+      // reset video options
+      gifWidth = 480
+      gifFps = 12
+      gifStart = ''
+      gifDuration = ''
+      gifHighQuality = true
     }
   }
 
@@ -154,6 +169,7 @@
         <input
           id="file-input"
           type="file"
+          aria-label="Choose files"
           class="hidden"
           on:change={onPickFile}
         />
@@ -197,7 +213,7 @@
                 <div
                   class="rounded-lg border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-center text-sm transition-colors peer-checked:bg-sky-600 dark:peer-checked:bg-sky-400 peer-checked:text-white group-hover:bg-neutral-100 dark:group-hover:bg-neutral-800"
                 >
-                  {f.toUpperCase()}
+                  {formatImageFormatLabel(f)}
                 </div>
               </label>
             {/each}
