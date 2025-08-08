@@ -13,6 +13,31 @@ function createTestFile(name: string, type: string, size = 10): File {
   return new File([new Uint8Array(size)], name, { type });
 }
 
+class FakeOffscreenCanvas {
+  width: number;
+  height: number;
+  constructor(w: number, h: number) {
+    this.width = w;
+    this.height = h;
+  }
+  getContext() {
+    return { drawImage: vi.fn() };
+  }
+  convertToBlob(opts: { type: string; quality?: number; }) {
+    return Promise.resolve(new Blob([new Uint8Array([1, 2, 3])], { type: opts.type }));
+  }
+}
+
+// Factory function to create a mock with call tracking
+function createMockOffscreenCanvasWithTracking(calls: Array<{ type: string; quality?: number; }>) {
+  return class extends FakeOffscreenCanvas {
+    convertToBlob(opts: { type: string; quality?: number; }) {
+      calls.push({ type: opts.type, quality: opts.quality });
+      return Promise.resolve(new Blob([new Uint8Array([1, 2, 3])], { type: opts.type }));
+    }
+  };
+}
+
 describe('convertImageFile (browser)', () => {
   const originalCreateImageBitmap = globalThis.createImageBitmap;
   const originalOffscreenCanvas = (globalThis as any).OffscreenCanvas;
@@ -33,21 +58,7 @@ describe('convertImageFile (browser)', () => {
 
   it('respects maxWidth only and keeps aspect ratio using OffscreenCanvas', async () => {
     const calls: Array<{ type: string; quality?: number; }> = [];
-    class FakeOC {
-      width: number;
-      height: number;
-      constructor(w: number, h: number) {
-        this.width = w; this.height = h;
-      }
-      getContext() {
-        return { drawImage: vi.fn() };
-      }
-      convertToBlob(opts: { type: string; quality?: number; }) {
-        calls.push({ type: opts.type, quality: opts.quality });
-        return Promise.resolve(new Blob([new Uint8Array([1, 2, 3])], { type: opts.type }));
-      }
-    }
-    (globalThis as any).OffscreenCanvas = FakeOC as any;
+    (globalThis as any).OffscreenCanvas = createMockOffscreenCanvasWithTracking(calls);
 
     const file = createTestFile('photo.jpg', 'image/jpeg');
     const out = await convertImageFile(file, { targetFormat: 'webp', maxWidth: 1000, quality: 0.5 });
