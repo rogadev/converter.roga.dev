@@ -1,142 +1,149 @@
 <script lang="ts">
-  import { convertImageFile, type ImageFormat } from '$lib/converters/image'
-  import { convertMp4ToGif, type Mp4ToGifOptions } from '$lib/converters/video'
-  import { downloadBlob, humanFileSize } from '$lib/converters/web'
+  import { downloadBlob, humanFileSize, renameFile } from '$lib/converters/web'
+  import { ConversionService } from '$lib/conversion-service'
+  import {
+    detectFileKind,
+    getDefaultImageTarget,
+    formatImageLabel,
+  } from '$lib/file-utils'
+  import { handleConversionError } from '$lib/error-handler'
+  import type { FileKind, ImageFormat } from '$lib/types'
+  import { IMAGE_FORMATS } from '$lib/types'
 
-  type FileKind = 'image' | 'video' | 'unsupported' | null
+  // Core state
+  let selectedFile = $state<File | null>(null)
+  let fileKind = $state<FileKind>(null)
+  let errorMessage = $state<string | null>(null)
+  let working = $state(false)
+  let outputUrl = $state<string | null>(null)
+  let outputSize = $state<string | null>(null)
 
-  let selectedFile: File | null = null
-  let fileKind: FileKind = null
-  let errorMessage: string | null = null
+  // Default conversion settings
+  const DEFAULT_IMAGE_QUALITY = 0.9
+  const DEFAULT_GIF_WIDTH = 480
+  const DEFAULT_GIF_FPS = 12
 
-  // Image options (simple by default)
-  let imageTarget: ImageFormat = 'webp'
-  let imageQuality = 0.9
-  let showImageAdvanced = false
+  // Conversion settings
+  let imageTarget = $state<ImageFormat>('webp')
+  let imageQuality = $state(DEFAULT_IMAGE_QUALITY)
+  let gifWidth = $state<number | ''>(DEFAULT_GIF_WIDTH)
+  let gifFps = $state<number | ''>(DEFAULT_GIF_FPS)
+  let gifStart = $state<number | ''>('')
+  let gifDuration = $state<number | ''>('')
+  let gifHighQuality = $state(true)
 
-  // Video options (simple by default)
-  let gifWidth: number | '' = 480
-  let gifFps: number | '' = 12
-  let gifStart: number | '' = ''
-  let gifDuration: number | '' = ''
-  let gifHighQuality = true
+  // Derived values using Svelte 5 runes
+  let readyToConvert = $derived(
+    !!selectedFile && fileKind !== 'unsupported' && !working
+  )
 
-  let working = false
-  let outputUrl: string | null = null
-  let outputSize: string | null = null
-
-  let readyToConvert = false
-  $: readyToConvert = !!selectedFile && fileKind !== 'unsupported' && !working
-
-  function detectKind(file: File): FileKind {
-    if (file.type.startsWith('image/')) return 'image'
-    if (file.type === 'video/mp4') return 'video'
-    return 'unsupported'
+  // Event handlers
+  function onPickFile(e: Event): void {
+    const target = e.target as HTMLInputElement
+    const file = target.files?.[0] ?? null
+    if (!file) return
+    setFile(file)
   }
 
-  function defaultTargetForImageType(file: File): ImageFormat {
-    const current = file.type.replace('image/', '')
-    const candidates: ImageFormat[] = ['webp', 'avif', 'jpeg', 'png']
-    const next = candidates.find((c) => c !== current)
-    return next ?? 'webp'
+  function onDrop(e: DragEvent): void {
+    e.preventDefault()
+    const file = e.dataTransfer?.files?.[0]
+    if (file) setFile(file)
   }
 
-  function onPickFile(e: Event) {
-    const f = (e.target as HTMLInputElement).files?.[0] ?? null
-    if (!f) return
-    setFile(f)
+  function onDragOver(e: DragEvent): void {
+    e.preventDefault()
   }
 
-  function formatImageFormatLabel(format: string): string {
-    if (format === 'webp') return 'WebP'
-    return format.toUpperCase()
-  }
-
-  function setFile(f: File) {
-    selectedFile = f
-    fileKind = detectKind(f)
+  function resetConversionState(): void {
     errorMessage = null
     outputUrl = null
     outputSize = null
-    if (fileKind === 'image') {
-      imageTarget = defaultTargetForImageType(f)
-      // reset image options
-      imageQuality = 0.9
-      showImageAdvanced = false
-    } else if (fileKind === 'video') {
-      // reset video options
-      gifWidth = 480
-      gifFps = 12
+  }
+
+  function resetConversionSettings(kind: FileKind): void {
+    if (kind === 'image') {
+      imageQuality = DEFAULT_IMAGE_QUALITY
+    } else if (kind === 'video') {
+      gifWidth = DEFAULT_GIF_WIDTH
+      gifFps = DEFAULT_GIF_FPS
       gifStart = ''
       gifDuration = ''
       gifHighQuality = true
     }
   }
 
-  function onDrop(e: DragEvent) {
-    e.preventDefault()
-    const f = e.dataTransfer?.files?.[0]
-    if (f) setFile(f)
+  function setFile(file: File): void {
+    selectedFile = file
+    fileKind = detectFileKind(file)
+    resetConversionState()
+
+    if (fileKind === 'image') {
+      imageTarget = getDefaultImageTarget(file)
+    }
+    resetConversionSettings(fileKind)
   }
 
-  function onDragOver(e: DragEvent) {
+  // Conversion functions
+  async function onStartConversion(e: Event): Promise<void> {
     e.preventDefault()
-  }
-
-  async function onStartConversion() {
     if (!selectedFile || !fileKind || fileKind === 'unsupported') return
+
     working = true
-    outputUrl = null
-    outputSize = null
-    errorMessage = null
+    resetConversionState()
+
     try {
-      if (fileKind === 'image') {
-        const blob = await convertImageFile(selectedFile, {
-          targetFormat: imageTarget,
-          quality: imageQuality,
-        })
-        outputUrl = URL.createObjectURL(blob)
-        outputSize = humanFileSize(blob.size)
-        autoDownload(blob, renameFile(selectedFile.name, imageTarget))
-      } else if (fileKind === 'video') {
-        const opts: Mp4ToGifOptions = {
-          width: gifWidth === '' ? undefined : Number(gifWidth),
-          fps: gifFps === '' ? undefined : Number(gifFps),
-          start: gifStart === '' ? undefined : Number(gifStart),
-          duration: gifDuration === '' ? undefined : Number(gifDuration),
-          highQuality: gifHighQuality,
-        }
-        const blob = await convertMp4ToGif(selectedFile, opts)
-        outputUrl = URL.createObjectURL(blob)
-        outputSize = humanFileSize(blob.size)
-        autoDownload(blob, renameFile(selectedFile.name, 'gif'))
-      }
+      const result = await convertFile()
+      if (!result) return
+
+      outputUrl = URL.createObjectURL(result.blob)
+      outputSize = humanFileSize(result.blob.size)
+      downloadBlob(result.blob, result.filename)
     } catch (err) {
-      errorMessage = (err as Error).message
+      errorMessage = handleConversionError(err, fileKind)
     } finally {
       working = false
     }
   }
 
-  function autoDownload(blob: Blob, filename: string) {
-    downloadBlob(blob, filename)
+  async function convertFile(): Promise<{
+    blob: Blob
+    filename: string
+  } | null> {
+    if (!selectedFile || !fileKind) return null
+
+    if (fileKind === 'image') {
+      return ConversionService.convertImage(selectedFile, {
+        targetFormat: imageTarget,
+        quality: imageQuality,
+      })
+    }
+
+    if (fileKind === 'video') {
+      return ConversionService.convertVideo(selectedFile, {
+        width: gifWidth,
+        fps: gifFps,
+        start: gifStart,
+        duration: gifDuration,
+        highQuality: gifHighQuality,
+      })
+    }
+
+    return null
   }
 
-  function renameFile(original: string, newExt: string): string {
-    const idx = original.lastIndexOf('.')
-    const base = idx > 0 ? original.slice(0, idx) : original
-    return `${base}.${newExt}`
-  }
+  async function downloadAgain(e: Event): Promise<void> {
+    e.preventDefault()
+    if (!outputUrl || !selectedFile) return
 
-  function downloadAgain() {
-    if (!outputUrl) return
-    const currentFile = selectedFile
-    if (!currentFile) return
-    fetch(outputUrl).then(async (res) => {
+    try {
+      const res = await fetch(outputUrl)
       const blob = await res.blob()
       const ext = fileKind === 'image' ? imageTarget : 'gif'
-      downloadBlob(blob, renameFile(currentFile.name, ext as string))
-    })
+      downloadBlob(blob, renameFile(selectedFile.name, ext))
+    } catch (err) {
+      errorMessage = err instanceof Error ? err.message : 'Download failed'
+    }
   }
 </script>
 
@@ -171,13 +178,13 @@
           type="file"
           aria-label="Choose files"
           class="hidden"
-          on:change={onPickFile}
+          onchange={onPickFile}
         />
         <label
           for="file-input"
           class="block cursor-pointer rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-50/60 dark:bg-neutral-800/40 px-6 py-12 text-center hover:bg-neutral-100/60 dark:hover:bg-neutral-800"
-          on:drop={onDrop}
-          on:dragover={onDragOver}
+          ondrop={onDrop}
+          ondragover={onDragOver}
         >
           {#if selectedFile}
             <div class="text-sm">
@@ -201,7 +208,7 @@
         <div class="grid gap-4">
           <div class="text-sm font-medium">Choose output format</div>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {#each ['png', 'jpeg', 'webp', 'avif'] as f}
+            {#each IMAGE_FORMATS as f}
               <label class="group relative">
                 <input
                   type="radio"
@@ -213,7 +220,7 @@
                 <div
                   class="rounded-lg border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-center text-sm transition-colors peer-checked:bg-sky-600 dark:peer-checked:bg-sky-400 peer-checked:text-white group-hover:bg-neutral-100 dark:group-hover:bg-neutral-800"
                 >
-                  {formatImageFormatLabel(f)}
+                  {formatImageLabel(f)}
                 </div>
               </label>
             {/each}
@@ -310,15 +317,18 @@
       <div class="mt-6 flex gap-3">
         <button
           class={`px-4 py-2 rounded-md transition-colors ${readyToConvert ? 'bg-sky-600 dark:bg-sky-400 text-white hover:bg-sky-700 dark:hover:bg-sky-300' : 'border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'}`}
-          on:click|preventDefault={onStartConversion}
-          disabled={!selectedFile || fileKind === 'unsupported' || working}
+          onclick={onStartConversion}
+          disabled={!readyToConvert}
+          aria-label={working
+            ? 'Converting file, please wait'
+            : 'Start file conversion'}
         >
           {working ? 'Converting…' : 'Start conversion'}
         </button>
         {#if outputUrl}
           <button
             class="px-4 py-2 rounded-md border border-neutral-300 dark:border-neutral-700"
-            on:click|preventDefault={downloadAgain}
+            onclick={downloadAgain}
           >
             Download again
           </button>

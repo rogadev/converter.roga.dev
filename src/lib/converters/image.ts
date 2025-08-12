@@ -16,9 +16,8 @@ export async function convertImageFile(
   file: File,
   options: ImageConvertOptions
 ): Promise<Blob> {
-  const arrayBuffer = await file.arrayBuffer();
-  const blob = new Blob([arrayBuffer], { type: file.type });
-  const imageBitmap = await createImageBitmap(blob);
+  // Create ImageBitmap directly from File for better memory efficiency
+  const imageBitmap = await createImageBitmap(file);
 
   const targetWidth = options.maxWidth ? Math.min(options.maxWidth, imageBitmap.width) : imageBitmap.width;
   const targetHeight = options.maxHeight ? Math.min(options.maxHeight, imageBitmap.height) : imageBitmap.height;
@@ -63,6 +62,10 @@ export async function convertImageFile(
   const out = await new Promise<Blob>((resolve, reject) => {
     domCanvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob produced null'))), mimeType, options.quality);
   });
+
+  // Clean up ImageBitmap to free memory
+  imageBitmap.close();
+
   return out;
 }
 
