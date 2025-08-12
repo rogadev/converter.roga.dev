@@ -45,8 +45,12 @@ describe('convertImageFile (browser)', () => {
   beforeEach(() => {
     // Minimal createImageBitmap mock
     globalThis.createImageBitmap = vi.fn(async (blob: Blob) => {
-      // default pretend image size
-      return { width: 2000, height: 1000 } as any;
+      // default pretend image size with close method
+      return {
+        width: 2000,
+        height: 1000,
+        close: vi.fn() // Mock the close method
+      } as any;
     }) as any;
   });
 
