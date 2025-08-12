@@ -25,13 +25,9 @@ export function humanFileSize(bytes: number): string {
 
 export function renameFile(filename: string, newExtension: string): string {
   const lastDotIndex = filename.lastIndexOf('.');
-  if (lastDotIndex === -1) {
-    return filename + '.' + newExtension;
-  }
-  return filename.substring(0, lastDotIndex + 1) + newExtension;
+  const base = lastDotIndex > 0 ? filename.slice(0, lastDotIndex) : filename;
+  return `${base}.${newExtension}`;
 }
 
-export function autoDownload(blob: Blob, filename: string): void {
-  downloadBlob(blob, filename);
-}
+
 

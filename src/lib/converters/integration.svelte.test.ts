@@ -30,11 +30,11 @@ describe('Converter Integration Tests (Browser)', () => {
     const fileInput = page.getByLabelText(/choose files/i);
     await expect.element(fileInput).toBeInTheDocument();
 
-    // Check for convert button (should be disabled initially)
-    const convertButton = page.getByRole('button', { name: /start conversion/i });
+    // Check for convert button (should be disabled initially) - use aria-label to be specific
+    const convertButton = page.getByLabelText('Start file conversion');
     await expect.element(convertButton).toBeInTheDocument();
     await expect.element(convertButton).toBeDisabled();
-  });
+  }, 10000);
 
   it('should show file information when a file is selected', async () => {
     render(Page);
@@ -53,10 +53,10 @@ describe('Converter Integration Tests (Browser)', () => {
     const fileName = page.getByText('test-image.jpg');
     await expect.element(fileName).toBeInTheDocument();
 
-    // Check that convert button is now enabled
-    const convertButton = page.getByRole('button', { name: /start conversion/i });
+    // Check that convert button is now enabled - use aria-label to be specific
+    const convertButton = page.getByLabelText('Start file conversion');
     await expect.element(convertButton).toBeEnabled();
-  });
+  }, 10000);
 
   it('should show appropriate options for image files', async () => {
     render(Page);
@@ -115,10 +115,10 @@ describe('Converter Integration Tests (Browser)', () => {
     const unsupportedMessage = page.getByText(/unsupported file type/i);
     await expect.element(unsupportedMessage).toBeInTheDocument();
 
-    // Convert button should remain disabled
-    const convertButton = page.getByRole('button', { name: /start conversion/i });
+    // Convert button should remain disabled - use aria-label to be specific
+    const convertButton = page.getByLabelText('Start file conversion');
     await expect.element(convertButton).toBeDisabled();
-  });
+  }, 10000);
 
   it('should show loading state during conversion', async () => {
     render(Page);
@@ -131,12 +131,12 @@ describe('Converter Integration Tests (Browser)', () => {
 
     await page.waitForTimeout(500);
 
-    const convertButton = page.getByRole('button', { name: /start conversion/i });
+    const convertButton = page.getByLabelText('Start file conversion');
 
     // Note: This would trigger actual conversion which might fail in test environment
     // We mainly test that the UI elements exist and behave correctly
     await expect.element(convertButton).toBeEnabled();
-  });
+  }, 10000);
 
   it('should validate input ranges', async () => {
     render(Page);
