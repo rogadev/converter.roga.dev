@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Svelte Comment Polish",
+  "description": "Automatically cleans up and polishes comments in Svelte files using Svelte, TypeScript, and commenting best practices whenever successful changes are confirmed",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*.svelte"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review and polish the comments in this Svelte file. Apply Svelte, TypeScript, and commenting best practices including: 1) Use JSDoc format for component props and functions, 2) Add clear descriptions for reactive statements and stores, 3) Document component slots and events, 4) Use TypeScript-style comments for type annotations, 5) Remove outdated or redundant comments, 6) Ensure comments explain 'why' not 'what', 7) Follow Svelte-specific commenting conventions for script/style blocks, 8) Add component usage examples where helpful. Focus on making the code more maintainable and self-documenting."
+  }
+}

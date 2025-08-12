@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "TS Comment Polish",
+  "description": "Automatically cleans up and polishes comments in TypeScript files using TS and commenting best practices whenever successful changes are confirmed",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*.ts",
+      "**/*.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review and polish the comments in this TypeScript file according to TypeScript and commenting best practices. Focus on: 1) Adding JSDoc comments for functions, classes, and interfaces 2) Improving inline comment clarity and conciseness 3) Removing redundant or obvious comments 4) Ensuring consistent comment formatting 5) Adding type information where helpful 6) Following TSDoc conventions for documentation comments. Make the comments more professional and maintainable while preserving important context and explanations."
+  }
+}
