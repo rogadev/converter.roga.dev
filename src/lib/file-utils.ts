@@ -19,7 +19,7 @@ export function getDefaultImageTarget(file: File): ImageFormat {
   const currentFormat = mimeType.replace('image/', '') as ImageFormat;
 
   // Prefer modern formats, but avoid converting to the same format
-  const preferredFormats: ImageFormat[] = ['webp', 'avif', 'png', 'jpeg'];
+  const preferredFormats: ImageFormat[] = ['webp', 'avif', 'png', 'jpeg', 'ico'];
 
   return preferredFormats.find(format => format !== currentFormat) ?? 'webp';
 }

@@ -2,13 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { page } from '@vitest/browser/context';
 import { convertImageFile, type ImageFormat } from './image';
 
-declare global {
-  // eslint-disable-next-line no-var
-  var createImageBitmap: (blob: Blob) => Promise<{ width: number; height: number; }>;
-  // eslint-disable-next-line no-var
-  var OffscreenCanvas: any;
-}
-
 function createTestFile(name: string, type: string, size = 10): File {
   return new File([new Uint8Array(size)], name, { type });
 }

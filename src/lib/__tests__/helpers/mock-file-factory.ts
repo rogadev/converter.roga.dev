@@ -30,7 +30,7 @@ export class MockFileFactory {
     // Create realistic image file content or use provided content
     const fileContent = content || this.generateImageContent(type, size);
 
-    return new File([fileContent], name, {
+    return new File([fileContent as BlobPart], name, {
       type,
       lastModified
     });
@@ -47,7 +47,7 @@ export class MockFileFactory {
 
     const fileContent = content || this.generateVideoContent(size);
 
-    return new File([fileContent], name, {
+    return new File([fileContent as BlobPart], name, {
       type: 'video/mp4',
       lastModified
     });
@@ -94,7 +94,7 @@ export class MockFileFactory {
     // Generate large content efficiently
     const content = this.generateLargeContent(size);
 
-    return new File([content], name, {
+    return new File([content as BlobPart], name, {
       type,
       lastModified
     });
@@ -256,7 +256,7 @@ export class MockFileFactory {
     const { minSize = 1024, maxSize = 10 * 1024 * 1024 } = validation;
     const size = Math.max(minSize, Math.min(maxSize, options.size || minSize));
 
-    const file = new File([this.generateContent(type, size)], name, {
+    const file = new File([this.generateContent(type, size) as BlobPart], name, {
       type,
       lastModified: options.lastModified || Date.now()
     });

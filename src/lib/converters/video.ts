@@ -43,24 +43,24 @@ export async function convertMp4ToGif(file: File, options: Mp4ToGifOptions = {})
     const fps = options.fps ?? 12;
     const width = options.width;
 
-    const scaleFilter = width ? `scale=${width}:-1:flags=lanczos` : 'scale=iw:ih:flags=lanczos';
+    const scaleFilter = width != null ? `scale=${width}:-1:flags=lanczos` : 'scale=iw:ih:flags=lanczos';
     const fpsFilter = `fps=${fps}`;
     const filter = `${fpsFilter},${scaleFilter}`;
 
     if (options.highQuality) {
       // palette generation improves quality
       console.log('Starting high-quality conversion with palette generation...');
+      // First pass: generate palette, honoring seek/duration if provided
       await ffmpeg.exec([
-        '-i',
-        inputName,
+        ...args,
         '-vf',
         `${filter},palettegen=stats_mode=full`,
         '-y',
         paletteName
       ]);
+      // Second pass: use palette for higher quality, also honoring seek/duration
       await ffmpeg.exec([
-        '-i',
-        inputName,
+        ...args,
         '-i',
         paletteName,
         '-lavfi',
@@ -70,7 +70,13 @@ export async function convertMp4ToGif(file: File, options: Mp4ToGifOptions = {})
       ]);
     } else {
       console.log('Starting standard quality conversion...');
-      await ffmpeg.exec(['-i', inputName, '-vf', filter, '-y', outputName]);
+      await ffmpeg.exec([
+        ...args,
+        '-vf',
+        filter,
+        '-y',
+        outputName
+      ]);
     }
 
     console.log('Conversion completed, reading output file...');

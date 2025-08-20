@@ -53,7 +53,7 @@ describe('Conversion Workflow UI States', () => {
       const testFile = TestFiles.jpegImage();
       await UITestHelpers.uploadFile(testFile);
 
-      const convertButton = page.getByRole('button', { name: /start conversion/i });
+      const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
       await convertButton.click();
 
       // Should show loading state
@@ -91,7 +91,7 @@ describe('Conversion Workflow UI States', () => {
       const testFile = TestFiles.mp4Video();
       await UITestHelpers.uploadFile(testFile);
 
-      const convertButton = page.getByRole('button', { name: /start conversion/i });
+      const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
       await convertButton.click();
 
       // Should show loading state
@@ -120,7 +120,7 @@ describe('Conversion Workflow UI States', () => {
       const testFile = TestFiles.jpegImage();
       await UITestHelpers.uploadFile(testFile);
 
-      const convertButton = page.getByRole('button', { name: /start conversion/i });
+      const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
 
       // Start first conversion
       await convertButton.click();
@@ -186,7 +186,7 @@ describe('Conversion Workflow UI States', () => {
       const testFile = TestFiles.jpegImage();
       await UITestHelpers.uploadFile(testFile);
 
-      const convertButton = page.getByRole('button', { name: /start conversion/i });
+      const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
       await convertButton.click();
 
       await UITestHelpers.waitForConversionComplete();
@@ -202,7 +202,7 @@ describe('Conversion Workflow UI States', () => {
       const testFile = TestFiles.mp4Video();
       await UITestHelpers.uploadFile(testFile);
 
-      const convertButton = page.getByRole('button', { name: /start conversion/i });
+      const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
       await convertButton.click();
 
       await UITestHelpers.waitForConversionComplete();
@@ -217,7 +217,7 @@ describe('Conversion Workflow UI States', () => {
       const testFile = TestFiles.jpegImage();
       await UITestHelpers.uploadFile(testFile);
 
-      const convertButton = page.getByRole('button', { name: /start conversion/i });
+      const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
       await convertButton.click();
 
       await UITestHelpers.waitForConversionComplete();
@@ -232,7 +232,7 @@ describe('Conversion Workflow UI States', () => {
       const testFile = TestFiles.jpegImage();
       await UITestHelpers.uploadFile(testFile);
 
-      const convertButton = page.getByRole('button', { name: /start conversion/i });
+      const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
       await convertButton.click();
 
       await UITestHelpers.waitForConversionComplete();
@@ -248,7 +248,7 @@ describe('Conversion Workflow UI States', () => {
       const testFile = TestFiles.jpegImage();
       await UITestHelpers.uploadFile(testFile);
 
-      const convertButton = page.getByRole('button', { name: /start conversion/i });
+      const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
       await convertButton.click();
 
       await UITestHelpers.waitForConversionComplete();
@@ -265,7 +265,7 @@ describe('Conversion Workflow UI States', () => {
       const testFile = TestFiles.jpegImage();
       await UITestHelpers.uploadFile(testFile);
 
-      const convertButton = page.getByRole('button', { name: /start conversion/i });
+      const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
       await convertButton.click();
 
       await UITestHelpers.waitForConversionComplete();
@@ -465,8 +465,8 @@ describe('Conversion Workflow UI States', () => {
       await expect.element(previewText).toBeInTheDocument();
 
       // Should not show output image
-      const outputImages = page.locator('img[alt="Output"]');
-      await expect.element(outputImages).not.toBeInTheDocument();
+      const outputImages = document.querySelectorAll('img[alt="Output"]');
+      expect(outputImages.length).toBe(0);
     });
 
     it('should not show download again button when conversion fails', async () => {
@@ -484,8 +484,11 @@ describe('Conversion Workflow UI States', () => {
       await page.waitForTimeout(100);
 
       // Should not show download again button
-      const downloadButtons = page.locator('button:has-text("Download again")');
-      await expect.element(downloadButtons).not.toBeInTheDocument();
+      const downloadButtons = document.querySelectorAll('button');
+      const downloadAgainButtons = Array.from(downloadButtons).filter(btn =>
+        btn.textContent?.includes('Download again')
+      );
+      expect(downloadAgainButtons.length).toBe(0);
     });
   });
 
