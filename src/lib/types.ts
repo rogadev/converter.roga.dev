@@ -22,9 +22,9 @@ export interface VideoSettings {
   highQuality: boolean;
 }
 
-export type ImageFormat = 'png' | 'jpeg' | 'webp' | 'avif';
+export type ImageFormat = 'png' | 'jpeg' | 'webp' | 'avif' | 'ico';
 
-export const IMAGE_FORMATS: readonly ImageFormat[] = ['png', 'jpeg', 'webp', 'avif'] as const;
+export const IMAGE_FORMATS: readonly ImageFormat[] = ['png', 'jpeg', 'webp', 'avif', 'ico'] as const;
 export const SUPPORTED_IMAGE_TYPES = [
   'image/png',
   'image/jpeg',

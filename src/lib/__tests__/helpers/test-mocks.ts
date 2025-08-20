@@ -72,7 +72,13 @@ export class TestMocks {
    * Gets mocked conversion service for test assertions
    */
   static async getConversionServiceMocks() {
-    return await import('$lib/conversion-service');
+    const { ConversionService } = await import('$lib/conversion-service');
+    return {
+      ConversionService: {
+        convertImage: ConversionService.convertImage as any,
+        convertVideo: ConversionService.convertVideo as any
+      }
+    };
   }
 
   /**

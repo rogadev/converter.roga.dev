@@ -338,11 +338,25 @@ describe('Image Converter', () => {
     });
 
     it('should fallback to DOM canvas when OffscreenCanvas lacks convertToBlob', async () => {
-      // Arrange
-      class MockOffscreenCanvasNoConvert extends MockOffscreenCanvas {
-        // No convertToBlob method
+      // Arrange: provide an OffscreenCanvas implementation WITHOUT convertToBlob
+      class MockOffscreenCanvasNoConvert {
+        width = 0;
+        height = 0;
+        private context: MockCanvasContext | null = null;
+        constructor(width: number, height: number) {
+          this.width = width;
+          this.height = height;
+        }
+        getContext(type: string) {
+          if (type === '2d') {
+            this.context = new MockCanvasContext();
+            return this.context;
+          }
+          return null;
+        }
+        // Note: intentionally no convertToBlob here
       }
-      (global as any).OffscreenCanvas = MockOffscreenCanvasNoConvert;
+      (global as any).OffscreenCanvas = MockOffscreenCanvasNoConvert as any;
 
       const testFile = TestFiles.webpImage();
       const options: ImageConvertOptions = {

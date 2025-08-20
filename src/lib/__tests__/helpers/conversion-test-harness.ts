@@ -255,8 +255,11 @@ export class ConversionTestHarness {
   private static getMemoryUsage(): number {
     if (this.memoryMonitoringEnabled && 'memory' in performance) {
       try {
-        // @ts-expect-error - memory is not in standard Performance interface
-        const memory = performance.memory;
+        const memory = (performance as any).memory as {
+          usedJSHeapSize?: number;
+          totalJSHeapSize?: number;
+          jsHeapSizeLimit?: number;
+        } | undefined;
         const usedMB = (memory?.usedJSHeapSize || 0) / (1024 * 1024);
         const totalMB = (memory?.totalJSHeapSize || 0) / (1024 * 1024);
         const limitMB = (memory?.jsHeapSizeLimit || 0) / (1024 * 1024);

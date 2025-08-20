@@ -67,7 +67,7 @@ describe('/+page.svelte', () => {
 
 		it('should render disabled conversion button initially', async () => {
 			render(Page);
-			const convertButton = page.getByRole('button', { name: /start conversion/i });
+			const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
 			await expect.element(convertButton).toBeInTheDocument();
 			await expect.element(convertButton).toBeDisabled();
 		});
@@ -103,7 +103,7 @@ describe('/+page.svelte', () => {
 	describe('Basic UI Elements', () => {
 		it('should render conversion button', async () => {
 			render(Page);
-			const convertButton = page.getByText('Start conversion');
+			const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
 			await expect.element(convertButton).toBeInTheDocument();
 		});
 

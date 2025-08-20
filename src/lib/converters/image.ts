@@ -1,4 +1,7 @@
-export type ImageFormat = 'png' | 'jpeg' | 'webp' | 'avif';
+import type { ImageFormat } from '../types';
+
+// Re-export ImageFormat for external consumers
+export type { ImageFormat };
 
 export interface ImageConvertOptions {
   targetFormat: ImageFormat;
@@ -9,7 +12,41 @@ export interface ImageConvertOptions {
 
 function getMimeType(format: ImageFormat): string {
   if (format === 'jpeg') return 'image/jpeg';
+  if (format === 'ico') return 'image/x-icon';
   return `image/${format}`;
+}
+
+async function pngToIcoBlob(width: number, height: number, pngBlob: Blob): Promise<Blob> {
+  const pngBuffer = new Uint8Array(await pngBlob.arrayBuffer());
+  const icoHeaderSize = 6;
+  const dirEntrySize = 16;
+  const imageOffset = icoHeaderSize + dirEntrySize;
+  const totalSize = imageOffset + pngBuffer.length;
+
+  const bytes = new Uint8Array(totalSize);
+  const view = new DataView(bytes.buffer);
+
+  // ICONDIR header
+  view.setUint16(0, 0, true);      // reserved
+  view.setUint16(2, 1, true);      // type: 1 = icon
+  view.setUint16(4, 1, true);      // count: 1 image
+
+  // ICONDIRENTRY
+  const wByte = width === 256 ? 0 : Math.max(0, Math.min(255, width));
+  const hByte = height === 256 ? 0 : Math.max(0, Math.min(255, height));
+  bytes[6] = wByte;                // width
+  bytes[7] = hByte;                // height
+  bytes[8] = 0;                    // color count
+  bytes[9] = 0;                    // reserved
+  view.setUint16(10, 1, true);     // planes
+  view.setUint16(12, 32, true);    // bit count (hint)
+  view.setUint32(14, pngBuffer.length, true); // bytes in resource
+  view.setUint32(18, imageOffset, true);      // offset to image data
+
+  // image data (PNG)
+  bytes.set(pngBuffer, imageOffset);
+
+  return new Blob([bytes], { type: 'image/x-icon' });
 }
 
 export async function convertImageFile(
@@ -17,7 +54,8 @@ export async function convertImageFile(
   options: ImageConvertOptions
 ): Promise<Blob> {
   const isSvg = file.type === 'image/svg+xml';
-  const mimeType = getMimeType(options.targetFormat);
+  const targetMimeType = getMimeType(options.targetFormat);
+  const rasterMimeType = options.targetFormat === 'ico' ? 'image/png' : targetMimeType;
 
   if (isSvg) {
     // Rasterize SVG via HTMLImageElement for broader compatibility
@@ -81,7 +119,8 @@ export async function convertImageFile(
         if (!octx) throw new Error('Failed to acquire 2D context');
         octx.drawImage(img, 0, 0, width, height);
         if (typeof (oc as any).convertToBlob === 'function') {
-          return await (oc as any).convertToBlob({ type: mimeType, quality: options.quality });
+          const rasterBlob = await (oc as any).convertToBlob({ type: rasterMimeType, quality: options.quality });
+          return options.targetFormat === 'ico' ? await pngToIcoBlob(width, height, rasterBlob) : rasterBlob;
         }
       }
 
@@ -92,9 +131,9 @@ export async function convertImageFile(
       if (!domCtx) throw new Error('Failed to acquire DOM 2D context');
       domCtx.drawImage(img, 0, 0, width, height);
       const out = await new Promise<Blob>((resolve, reject) => {
-        domCanvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob produced null'))), mimeType, options.quality);
+        domCanvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob produced null'))), rasterMimeType, options.quality);
       });
-      return out;
+      return options.targetFormat === 'ico' ? await pngToIcoBlob(width, height, out) : out;
     } finally {
       URL.revokeObjectURL(url);
     }
@@ -129,9 +168,9 @@ export async function convertImageFile(
     if (!octx) throw new Error('Failed to acquire 2D context');
     octx.drawImage(imageBitmap, 0, 0, width, height);
     if (typeof (oc as any).convertToBlob === 'function') {
-      const blob = await (oc as any).convertToBlob({ type: mimeType, quality: options.quality });
+      const blob = await (oc as any).convertToBlob({ type: rasterMimeType, quality: options.quality });
       imageBitmap.close();
-      return blob;
+      return options.targetFormat === 'ico' ? await pngToIcoBlob(width, height, blob) : blob;
     }
   }
 
@@ -142,10 +181,10 @@ export async function convertImageFile(
   if (!domCtx) throw new Error('Failed to acquire DOM 2D context');
   domCtx.drawImage(imageBitmap, 0, 0, width, height);
   const out = await new Promise<Blob>((resolve, reject) => {
-    domCanvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob produced null'))), mimeType, options.quality);
+    domCanvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob produced null'))), rasterMimeType, options.quality);
   });
   imageBitmap.close();
-  return out;
+  return options.targetFormat === 'ico' ? await pngToIcoBlob(width, height, out) : out;
 }
 
 

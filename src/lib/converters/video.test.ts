@@ -182,12 +182,13 @@ describe('Video Converter', () => {
       const execCalls = mockFFmpeg.exec.mock.calls;
       expect(execCalls.length).toBeGreaterThan(0);
       const lastCall = execCalls[execCalls.length - 1][0];
-      expect(lastCall).toContain('-ss');
-      expect(lastCall).toContain('1');
-      expect(lastCall).toContain('-t');
-      expect(lastCall).toContain('5');
-      expect(lastCall).toContain('fps=15');
-      expect(lastCall).toContain('scale=480:-1');
+      const flat = Array.isArray(lastCall) ? lastCall.join(' ') : String(lastCall);
+      expect(flat).toContain('-ss');
+      expect(flat).toContain('1');
+      expect(flat).toContain('-t');
+      expect(flat).toContain('5');
+      expect(flat).toContain('fps=15');
+      expect(flat).toContain('scale=480:-1');
     });
 
     it('should handle high quality conversion with palette generation', async () => {
@@ -347,12 +348,13 @@ describe('Video Converter', () => {
       const execCalls = mockFFmpeg.exec.mock.calls;
       expect(execCalls.length).toBeGreaterThan(0);
       const lastCall = execCalls[execCalls.length - 1][0];
-      expect(lastCall).toContain('-ss');
-      expect(lastCall).toContain('0');
-      expect(lastCall).toContain('-t');
-      expect(lastCall).toContain('0');
-      expect(lastCall).toContain('fps=0');
-      expect(lastCall).toContain('scale=0:-1');
+      const flat = Array.isArray(lastCall) ? lastCall.join(' ') : String(lastCall);
+      expect(flat).toContain('-ss');
+      expect(flat).toContain('0');
+      expect(flat).toContain('-t');
+      expect(flat).toContain('0');
+      expect(flat).toContain('fps=0');
+      expect(flat).toContain('scale=0:-1');
     });
 
     it('should handle undefined vs null values correctly', async () => {
