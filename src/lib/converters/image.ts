@@ -1,6 +1,5 @@
-import type { ImageFormat } from '../types';
+import type { ImageFormat, CropRect } from '../types';
 
-// Re-export ImageFormat for external consumers
 export type { ImageFormat };
 
 export interface ImageConvertOptions {
@@ -8,45 +7,235 @@ export interface ImageConvertOptions {
   quality?: number; // 0..1
   maxWidth?: number;
   maxHeight?: number;
+  cropRect?: CropRect;
 }
+
+interface Dimensions {
+  width: number;
+  height: number;
+}
+
+const MIME_TYPES: Record<ImageFormat, string> = {
+  png: 'image/png',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+  avif: 'image/avif',
+  ico: 'image/x-icon'
+};
+
+const DEFAULT_SVG_SIZE = 1024;
 
 function getMimeType(format: ImageFormat): string {
-  if (format === 'jpeg') return 'image/jpeg';
-  if (format === 'ico') return 'image/x-icon';
-  return `image/${format}`;
+  return MIME_TYPES[format];
 }
 
-async function pngToIcoBlob(width: number, height: number, pngBlob: Blob): Promise<Blob> {
-  const pngBuffer = new Uint8Array(await pngBlob.arrayBuffer());
-  const icoHeaderSize = 6;
-  const dirEntrySize = 16;
-  const imageOffset = icoHeaderSize + dirEntrySize;
-  const totalSize = imageOffset + pngBuffer.length;
+/**
+ * Calculates output dimensions respecting maxWidth/maxHeight constraints.
+ * Maintains aspect ratio and never upscales beyond source dimensions.
+ */
+function calculateOutputDimensions(
+  sourceWidth: number,
+  sourceHeight: number,
+  maxWidth?: number,
+  maxHeight?: number
+): Dimensions {
+  // Guard against zero/invalid dimensions
+  if (sourceWidth <= 0 || sourceHeight <= 0) {
+    return { width: 1, height: 1 };
+  }
 
-  const bytes = new Uint8Array(totalSize);
-  const view = new DataView(bytes.buffer);
+  if (!maxWidth && !maxHeight) {
+    return { width: sourceWidth, height: sourceHeight };
+  }
+
+  if (maxWidth && !maxHeight) {
+    const scale = maxWidth / sourceWidth;
+    return {
+      width: Math.round(sourceWidth * scale) || 1,
+      height: Math.round(sourceHeight * scale) || 1
+    };
+  }
+
+  if (!maxWidth && maxHeight) {
+    const scale = maxHeight / sourceHeight;
+    return {
+      width: Math.round(sourceWidth * scale) || 1,
+      height: Math.round(sourceHeight * scale) || 1
+    };
+  }
+
+  // Both constraints: fit within bounds without upscaling
+  const scale = Math.min(maxWidth! / sourceWidth, maxHeight! / sourceHeight, 1);
+  return {
+    width: Math.round(sourceWidth * scale) || 1,
+    height: Math.round(sourceHeight * scale) || 1
+  };
+}
+
+/**
+ * Renders to canvas and exports as blob, using OffscreenCanvas when available.
+ */
+async function renderToBlob(
+  width: number,
+  height: number,
+  mimeType: string,
+  quality: number | undefined,
+  draw: (ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) => void
+): Promise<Blob> {
+  // Prefer OffscreenCanvas for better performance
+  if (typeof OffscreenCanvas !== 'undefined') {
+    const canvas = new OffscreenCanvas(width, height);
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) throw new Error('Failed to acquire OffscreenCanvas 2D context');
+    draw(ctx);
+    return canvas.convertToBlob({ type: mimeType, quality });
+  }
+
+  // Fallback to DOM canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Failed to acquire DOM canvas 2D context');
+  draw(ctx);
+
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob returned null'))),
+      mimeType,
+      quality
+    );
+  });
+}
+
+/**
+ * Wraps a PNG blob in ICO format header.
+ * ICO files store dimensions as bytes (0 = 256px).
+ */
+async function wrapPngAsIco(width: number, height: number, pngBlob: Blob): Promise<Blob> {
+  const pngData = new Uint8Array(await pngBlob.arrayBuffer());
+
+  const ICO_HEADER_SIZE = 6;
+  const DIR_ENTRY_SIZE = 16;
+  const imageOffset = ICO_HEADER_SIZE + DIR_ENTRY_SIZE;
+
+  const buffer = new ArrayBuffer(imageOffset + pngData.length);
+  const bytes = new Uint8Array(buffer);
+  const view = new DataView(buffer);
 
   // ICONDIR header
-  view.setUint16(0, 0, true);      // reserved
-  view.setUint16(2, 1, true);      // type: 1 = icon
-  view.setUint16(4, 1, true);      // count: 1 image
+  view.setUint16(0, 0, true); // reserved
+  view.setUint16(2, 1, true); // type: 1 = icon
+  view.setUint16(4, 1, true); // image count
 
-  // ICONDIRENTRY
-  const wByte = width === 256 ? 0 : Math.max(0, Math.min(255, width));
-  const hByte = height === 256 ? 0 : Math.max(0, Math.min(255, height));
-  bytes[6] = wByte;                // width
-  bytes[7] = hByte;                // height
-  bytes[8] = 0;                    // color count
-  bytes[9] = 0;                    // reserved
-  view.setUint16(10, 1, true);     // planes
-  view.setUint16(12, 32, true);    // bit count (hint)
-  view.setUint32(14, pngBuffer.length, true); // bytes in resource
-  view.setUint32(18, imageOffset, true);      // offset to image data
+  // ICONDIRENTRY (ICO spec: 0 means 256)
+  bytes[6] = width >= 256 ? 0 : width;
+  bytes[7] = height >= 256 ? 0 : height;
+  bytes[8] = 0; // color palette size
+  bytes[9] = 0; // reserved
+  view.setUint16(10, 1, true); // color planes
+  view.setUint16(12, 32, true); // bits per pixel
+  view.setUint32(14, pngData.length, true);
+  view.setUint32(18, imageOffset, true);
 
-  // image data (PNG)
-  bytes.set(pngBuffer, imageOffset);
+  bytes.set(pngData, imageOffset);
 
   return new Blob([bytes], { type: 'image/x-icon' });
+}
+
+/**
+ * Extracts SVG viewBox dimensions when naturalWidth/Height aren't available.
+ */
+async function extractSvgDimensions(file: File): Promise<Dimensions | null> {
+  try {
+    const text = await file.text();
+    const match = text.match(/viewBox\s*=\s*"[\d.\-]+\s+[\d.\-]+\s+([\d.]+)\s+([\d.]+)"/i);
+    if (match) {
+      const width = parseFloat(match[1]);
+      const height = parseFloat(match[2]);
+      if (width > 0 && height > 0) {
+        return { width, height };
+      }
+    }
+  } catch {
+    // Parsing failed; caller should use fallback
+  }
+  return null;
+}
+
+function loadImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = url;
+  });
+}
+
+async function convertSvg(
+  file: File,
+  options: ImageConvertOptions,
+  outputMimeType: string
+): Promise<Blob> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImage(url);
+
+    let width = img.naturalWidth || img.width;
+    let height = img.naturalHeight || img.height;
+
+    // SVGs may lack intrinsic dimensions
+    if (!width || !height) {
+      const viewBoxDims = await extractSvgDimensions(file);
+      if (viewBoxDims) {
+        width = viewBoxDims.width;
+        height = viewBoxDims.height;
+      } else {
+        width = DEFAULT_SVG_SIZE;
+        height = DEFAULT_SVG_SIZE;
+      }
+    }
+
+    const output = calculateOutputDimensions(width, height, options.maxWidth, options.maxHeight);
+
+    return renderToBlob(output.width, output.height, outputMimeType, options.quality, (ctx) => {
+      ctx.drawImage(img, 0, 0, output.width, output.height);
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+async function convertRasterImage(
+  file: File,
+  options: ImageConvertOptions,
+  outputMimeType: string
+): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  try {
+    const crop = options.cropRect;
+    const sourceX = crop?.x ?? 0;
+    const sourceY = crop?.y ?? 0;
+    const sourceWidth = crop?.width ?? bitmap.width;
+    const sourceHeight = crop?.height ?? bitmap.height;
+
+    const output = calculateOutputDimensions(
+      sourceWidth,
+      sourceHeight,
+      options.maxWidth,
+      options.maxHeight
+    );
+
+    return await renderToBlob(output.width, output.height, outputMimeType, options.quality, (ctx) => {
+      ctx.drawImage(
+        bitmap,
+        sourceX, sourceY, sourceWidth, sourceHeight,
+        0, 0, output.width, output.height
+      );
+    });
+  } finally {
+    bitmap.close();
+  }
 }
 
 export async function convertImageFile(
@@ -54,137 +243,21 @@ export async function convertImageFile(
   options: ImageConvertOptions
 ): Promise<Blob> {
   const isSvg = file.type === 'image/svg+xml';
-  const targetMimeType = getMimeType(options.targetFormat);
-  const rasterMimeType = options.targetFormat === 'ico' ? 'image/png' : targetMimeType;
+  const isIco = options.targetFormat === 'ico';
+  const outputMimeType = isIco ? 'image/png' : getMimeType(options.targetFormat);
 
-  if (isSvg) {
-    // Rasterize SVG via HTMLImageElement for broader compatibility
-    const url = URL.createObjectURL(file);
-    try {
-      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const i = new Image();
-        i.onload = () => resolve(i);
-        i.onerror = () => reject(new Error('Failed to load SVG image'));
-        i.src = url;
-      });
+  const rasterBlob = isSvg
+    ? await convertSvg(file, options, outputMimeType)
+    : await convertRasterImage(file, options, outputMimeType);
 
-      let intrinsicWidth = img.naturalWidth || img.width || 0;
-      let intrinsicHeight = img.naturalHeight || img.height || 0;
-
-      // Fallback when SVG has no intrinsic dimensions
-      if (intrinsicWidth === 0 || intrinsicHeight === 0) {
-        try {
-          const svgText = await file.text();
-          const viewBoxMatch = svgText.match(/viewBox\s*=\s*"([\d.\-]+)\s+([\d.\-]+)\s+([\d.\-]+)\s+([\d.\-]+)"/i);
-          if (viewBoxMatch) {
-            const vbWidth = parseFloat(viewBoxMatch[3]);
-            const vbHeight = parseFloat(viewBoxMatch[4]);
-            if (vbWidth > 0 && vbHeight > 0) {
-              intrinsicWidth = vbWidth;
-              intrinsicHeight = vbHeight;
-            }
-          }
-        } catch {
-          // ignore; will use default fallback below
-        }
-        if (intrinsicWidth === 0 || intrinsicHeight === 0) {
-          intrinsicWidth = 1024;
-          intrinsicHeight = 1024;
-        }
-      }
-
-      const targetWidth = options.maxWidth ? Math.min(options.maxWidth, intrinsicWidth) : intrinsicWidth;
-      const targetHeight = options.maxHeight ? Math.min(options.maxHeight, intrinsicHeight) : intrinsicHeight;
-
-      const { width, height } = (() => {
-        if (options.maxWidth && !options.maxHeight) {
-          const scale = options.maxWidth / intrinsicWidth;
-          return { width: Math.round(intrinsicWidth * scale), height: Math.round(intrinsicHeight * scale) };
-        }
-        if (!options.maxWidth && options.maxHeight) {
-          const scale = options.maxHeight / intrinsicHeight;
-          return { width: Math.round(intrinsicWidth * scale), height: Math.round(intrinsicHeight * scale) };
-        }
-        if (options.maxWidth && options.maxHeight) {
-          const scale = Math.min(options.maxWidth / intrinsicWidth, options.maxHeight / intrinsicHeight);
-          const s = Math.min(scale, 1);
-          return { width: Math.round(intrinsicWidth * s), height: Math.round(intrinsicHeight * s) };
-        }
-        return { width: targetWidth, height: targetHeight };
-      })();
-
-      if (typeof (globalThis as any).OffscreenCanvas !== 'undefined') {
-        const oc = new (globalThis as any).OffscreenCanvas(width, height);
-        const octx = oc.getContext('2d', { alpha: true });
-        if (!octx) throw new Error('Failed to acquire 2D context');
-        octx.drawImage(img, 0, 0, width, height);
-        if (typeof (oc as any).convertToBlob === 'function') {
-          const rasterBlob = await (oc as any).convertToBlob({ type: rasterMimeType, quality: options.quality });
-          return options.targetFormat === 'ico' ? await pngToIcoBlob(width, height, rasterBlob) : rasterBlob;
-        }
-      }
-
-      const domCanvas = document.createElement('canvas');
-      domCanvas.width = width;
-      domCanvas.height = height;
-      const domCtx = domCanvas.getContext('2d');
-      if (!domCtx) throw new Error('Failed to acquire DOM 2D context');
-      domCtx.drawImage(img, 0, 0, width, height);
-      const out = await new Promise<Blob>((resolve, reject) => {
-        domCanvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob produced null'))), rasterMimeType, options.quality);
-      });
-      return options.targetFormat === 'ico' ? await pngToIcoBlob(width, height, out) : out;
-    } finally {
-      URL.revokeObjectURL(url);
-    }
+  if (!isIco) {
+    return rasterBlob;
   }
 
-  // Non-SVG flow: use ImageBitmap for efficiency
-  const imageBitmap = await createImageBitmap(file);
+  // ICO needs dimensions for header; re-decode to get them
+  const bitmap = await createImageBitmap(rasterBlob);
+  const { width, height } = bitmap;
+  bitmap.close();
 
-  const targetWidth = options.maxWidth ? Math.min(options.maxWidth, imageBitmap.width) : imageBitmap.width;
-  const targetHeight = options.maxHeight ? Math.min(options.maxHeight, imageBitmap.height) : imageBitmap.height;
-
-  const { width, height } = (() => {
-    if (options.maxWidth && !options.maxHeight) {
-      const scale = options.maxWidth / imageBitmap.width;
-      return { width: Math.round(imageBitmap.width * scale), height: Math.round(imageBitmap.height * scale) };
-    }
-    if (!options.maxWidth && options.maxHeight) {
-      const scale = options.maxHeight / imageBitmap.height;
-      return { width: Math.round(imageBitmap.width * scale), height: Math.round(imageBitmap.height * scale) };
-    }
-    if (options.maxWidth && options.maxHeight) {
-      const scale = Math.min(options.maxWidth / imageBitmap.width, options.maxHeight / imageBitmap.height);
-      const s = Math.min(scale, 1);
-      return { width: Math.round(imageBitmap.width * s), height: Math.round(imageBitmap.height * s) };
-    }
-    return { width: targetWidth, height: targetHeight };
-  })();
-
-  if (typeof (globalThis as any).OffscreenCanvas !== 'undefined') {
-    const oc = new (globalThis as any).OffscreenCanvas(width, height);
-    const octx = oc.getContext('2d', { alpha: true });
-    if (!octx) throw new Error('Failed to acquire 2D context');
-    octx.drawImage(imageBitmap, 0, 0, width, height);
-    if (typeof (oc as any).convertToBlob === 'function') {
-      const blob = await (oc as any).convertToBlob({ type: rasterMimeType, quality: options.quality });
-      imageBitmap.close();
-      return options.targetFormat === 'ico' ? await pngToIcoBlob(width, height, blob) : blob;
-    }
-  }
-
-  const domCanvas = document.createElement('canvas');
-  domCanvas.width = width;
-  domCanvas.height = height;
-  const domCtx = domCanvas.getContext('2d');
-  if (!domCtx) throw new Error('Failed to acquire DOM 2D context');
-  domCtx.drawImage(imageBitmap, 0, 0, width, height);
-  const out = await new Promise<Blob>((resolve, reject) => {
-    domCanvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob produced null'))), rasterMimeType, options.quality);
-  });
-  imageBitmap.close();
-  return options.targetFormat === 'ico' ? await pngToIcoBlob(width, height, out) : out;
+  return wrapPngAsIco(width, height, rasterBlob);
 }
-
-
