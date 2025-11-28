@@ -50,7 +50,7 @@ describe('/+page.svelte', () => {
 			render(Page);
 			const heading = page.getByRole('heading', { level: 1 });
 			await expect.element(heading).toBeInTheDocument();
-			await expect.element(heading).toHaveTextContent('File Converter');
+			await expect.element(heading).toHaveTextContent('Image Converter');
 		});
 
 		it('should render description', async () => {
@@ -65,17 +65,16 @@ describe('/+page.svelte', () => {
 			await expect.element(uploadLabel).toBeInTheDocument();
 		});
 
-		it('should render disabled conversion button initially', async () => {
+		it('should not show conversion button before file selection', async () => {
 			render(Page);
 			const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
-			await expect.element(convertButton).toBeInTheDocument();
-			await expect.element(convertButton).toBeDisabled();
+			await expect.element(convertButton).not.toBeInTheDocument();
 		});
 
-		it('should render output preview area', async () => {
+		it('should not show preview area before file selection', async () => {
 			render(Page);
 			const previewText = page.getByText('Output preview');
-			await expect.element(previewText).toBeInTheDocument();
+			await expect.element(previewText).not.toBeInTheDocument();
 		});
 
 		it('should render privacy notice', async () => {
@@ -101,16 +100,16 @@ describe('/+page.svelte', () => {
 	});
 
 	describe('Basic UI Elements', () => {
-		it('should render conversion button', async () => {
+		it('should render share button', async () => {
 			render(Page);
-			const convertButton = page.getByRole('button', { name: /start (file )?conversion/i });
-			await expect.element(convertButton).toBeInTheDocument();
+			const shareButton = page.getByRole('button', { name: /share/i });
+			await expect.element(shareButton).toBeInTheDocument();
 		});
 
-		it('should render output preview area', async () => {
+		it('should render file upload label', async () => {
 			render(Page);
-			const previewText = page.getByText('Output preview');
-			await expect.element(previewText).toBeInTheDocument();
+			const uploadText = page.getByText('or click to browse');
+			await expect.element(uploadText).toBeInTheDocument();
 		});
 	});
 
