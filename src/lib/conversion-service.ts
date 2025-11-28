@@ -1,9 +1,14 @@
 import { convertImageFile, type ImageFormat } from './converters/image';
 import { convertMp4ToGif, type Mp4ToGifOptions } from './converters/video';
+import { renameFile } from './converters/web';
+import type { CropRect } from './types';
 
 export interface ImageConversionParams {
   targetFormat: ImageFormat;
   quality: number;
+  maxWidth?: number;
+  maxHeight?: number;
+  cropRect?: CropRect;
 }
 
 export interface VideoConversionParams {
@@ -27,10 +32,12 @@ export class ConversionService {
     const blob = await convertImageFile(file, {
       targetFormat: params.targetFormat,
       quality: params.quality,
+      maxWidth: params.maxWidth,
+      maxHeight: params.maxHeight,
+      cropRect: params.cropRect,
     });
 
-    const filename = this.renameFile(file.name, params.targetFormat);
-    return { blob, filename };
+    return { blob, filename: renameFile(file.name, params.targetFormat) };
   }
 
   static async convertVideo(
@@ -46,13 +53,6 @@ export class ConversionService {
     };
 
     const blob = await convertMp4ToGif(file, opts);
-    const filename = this.renameFile(file.name, 'gif');
-    return { blob, filename };
-  }
-
-  private static renameFile(original: string, newExt: string): string {
-    const idx = original.lastIndexOf('.');
-    const base = idx > 0 ? original.slice(0, idx) : original;
-    return `${base}.${newExt}`;
+    return { blob, filename: renameFile(file.name, 'gif') };
   }
 }
