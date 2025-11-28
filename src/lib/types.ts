@@ -1,17 +1,10 @@
 export type FileKind = 'image' | 'video' | 'unsupported' | null;
 
-export interface ConversionState {
-  selectedFile: File | null;
-  fileKind: FileKind;
-  errorMessage: string | null;
-  working: boolean;
-  outputUrl: string | null;
-  outputSize: string | null;
-}
-
-export interface ImageSettings {
-  target: ImageFormat;
-  quality: number;
+export interface CropRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export interface VideoSettings {
