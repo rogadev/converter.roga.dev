@@ -8,7 +8,8 @@ const mockFFmpeg = {
   writeFile: vi.fn(),
   exec: vi.fn(),
   readFile: vi.fn(),
-  deleteFile: vi.fn()
+  deleteFile: vi.fn(),
+  terminate: vi.fn()
 };
 
 const mockFetchFile = vi.fn();

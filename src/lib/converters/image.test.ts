@@ -337,7 +337,7 @@ describe('Image Converter', () => {
       expect(mockDocument.createElement).toHaveBeenCalledWith('canvas');
     });
 
-    it('should fallback to DOM canvas when OffscreenCanvas lacks convertToBlob', async () => {
+    it('should throw when OffscreenCanvas lacks convertToBlob', async () => {
       // Arrange: provide an OffscreenCanvas implementation WITHOUT convertToBlob
       class MockOffscreenCanvasNoConvert {
         width = 0;
@@ -363,12 +363,8 @@ describe('Image Converter', () => {
         targetFormat: 'png'
       };
 
-      // Act
-      const result = await convertImageFile(testFile, options);
-
-      // Assert
-      expect(result).toBeInstanceOf(Blob);
-      expect(mockDocument.createElement).toHaveBeenCalledWith('canvas');
+      // Act & Assert: code does not fall back to DOM canvas, it throws
+      await expect(convertImageFile(testFile, options)).rejects.toThrow();
     });
 
     it('should clean up ImageBitmap after conversion', async () => {
@@ -420,7 +416,7 @@ describe('Image Converter', () => {
 
       // Act & Assert
       await expect(convertImageFile(testFile, options))
-        .rejects.toThrow('Failed to acquire 2D context');
+        .rejects.toThrow('Failed to acquire OffscreenCanvas 2D context');
     });
 
     it('should handle DOM canvas context creation failure', async () => {
@@ -441,7 +437,7 @@ describe('Image Converter', () => {
 
       // Act & Assert
       await expect(convertImageFile(testFile, options))
-        .rejects.toThrow('Failed to acquire DOM 2D context');
+        .rejects.toThrow('Failed to acquire DOM canvas 2D context');
     });
 
     it('should handle toBlob returning null', async () => {
@@ -462,7 +458,7 @@ describe('Image Converter', () => {
 
       // Act & Assert
       await expect(convertImageFile(testFile, options))
-        .rejects.toThrow('toBlob produced null');
+        .rejects.toThrow('Canvas toBlob returned null');
     });
 
     it('should handle edge case with zero dimensions', async () => {

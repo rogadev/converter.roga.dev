@@ -20,6 +20,8 @@ vi.mock('@ffmpeg/ffmpeg', () => {
     async deleteFile(name: string) {
       this.logs.push(`del:${name}`);
     }
+    terminate() {}
+
   }
   return { FFmpeg: FFmpegMock };
 });

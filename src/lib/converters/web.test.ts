@@ -221,12 +221,16 @@ describe('web utilities', () => {
     });
 
     it('should clean up object URL after download', () => {
+      vi.useFakeTimers();
       const blob = new Blob(['test content'], { type: 'text/plain' });
       const filename = 'test.txt';
 
       downloadBlob(blob, filename);
 
+      expect(mockRevokeObjectURL).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(1000);
       expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+      vi.useRealTimers();
     });
 
     it('should handle different blob types', () => {
@@ -269,6 +273,7 @@ describe('web utilities', () => {
     });
 
     it('should complete full download workflow', () => {
+      vi.useFakeTimers();
       const blob = new Blob(['test content'], { type: 'text/plain' });
       const filename = 'test.txt';
 
@@ -282,7 +287,9 @@ describe('web utilities', () => {
       expect(mockAppendChild).toHaveBeenCalledWith(mockAnchor);
       expect(mockClick).toHaveBeenCalled();
       expect(mockAnchor.remove).toHaveBeenCalled();
+      vi.advanceTimersByTime(1000);
       expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+      vi.useRealTimers();
     });
   });
 
