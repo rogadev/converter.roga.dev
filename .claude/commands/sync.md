@@ -55,6 +55,7 @@ Identify the **current sprint**: the sprint milestone whose `due_on` is the near
 For each overdue sprint milestone that still has open issues:
 
 1. List the open issues in that milestone:
+
    ```bash
    gh issue list --milestone "<overdue milestone title>" --state open --json number,title,labels,assignees
    ```
@@ -62,6 +63,7 @@ For each overdue sprint milestone that still has open issues:
 2. **Exclude `[WAITING]` issues.** Do not move any issue whose title starts with `[WAITING]`. Those are backlog items — leave their milestone unchanged or clear it.
 
 3. For each remaining open issue, move it to the **current sprint** milestone:
+
    ```bash
    gh issue edit <number> --milestone "<current sprint title>"
    ```
@@ -99,14 +101,14 @@ For each open issue, ask:
 
 For each issue, assign a verdict:
 
-| Verdict | Meaning | Action |
-|---|---|---|
-| **Active** | Aligned with current intents, still needed | Keep open. No action. |
-| **Already done** | The work has been completed but the issue wasn't closed | Close with evidence. |
-| **Out of scope** | Project direction has shifted; this no longer fits | Recommend closing. Mark with rationale. |
-| **Stale** | No activity in 60+ days, low priority, no intent backing | Recommend closing or deprioritizing. |
-| **Superseded** | A newer issue covers this better | Recommend closing in favor of the newer issue. |
-| **Needs update** | Still relevant but the description is outdated or incomplete | Flag for update. |
+| Verdict          | Meaning                                                      | Action                                         |
+| ---------------- | ------------------------------------------------------------ | ---------------------------------------------- |
+| **Active**       | Aligned with current intents, still needed                   | Keep open. No action.                          |
+| **Already done** | The work has been completed but the issue wasn't closed      | Close with evidence.                           |
+| **Out of scope** | Project direction has shifted; this no longer fits           | Recommend closing. Mark with rationale.        |
+| **Stale**        | No activity in 60+ days, low priority, no intent backing     | Recommend closing or deprioritizing.           |
+| **Superseded**   | A newer issue covers this better                             | Recommend closing in favor of the newer issue. |
+| **Needs update** | Still relevant but the description is outdated or incomplete | Flag for update.                               |
 
 ### 3c. Presenting verdicts
 

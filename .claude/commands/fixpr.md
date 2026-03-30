@@ -73,13 +73,13 @@ The output will contain the actual error messages, stack traces, and failed comm
 
 **Parse the failures into categories:**
 
-| Category | Indicators |
-|---|---|
-| **Lint** | `pnpm lint`, ESLint errors, Prettier diff |
-| **Type check** | `pnpm check`, svelte-check, `TS2xxx` errors, type mismatches |
-| **Build** | `pnpm build`, Vite errors, import resolution, missing modules |
-| **Test** | `pnpm test`, assertion failures, timeout, missing test files |
-| **Deploy** | Docker build, Skaffold, Cloud Deploy, Helm — usually infra, not code |
+| Category       | Indicators                                                           |
+| -------------- | -------------------------------------------------------------------- |
+| **Lint**       | `pnpm lint`, ESLint errors, Prettier diff                            |
+| **Type check** | `pnpm check`, svelte-check, `TS2xxx` errors, type mismatches         |
+| **Build**      | `pnpm build`, Vite errors, import resolution, missing modules        |
+| **Test**       | `pnpm test`, assertion failures, timeout, missing test files         |
+| **Deploy**     | Docker build, Skaffold, Cloud Deploy, Helm — usually infra, not code |
 
 ### 2c. Review comments
 
@@ -141,6 +141,7 @@ For each failure, determine the fix strategy:
 ### Lint failures
 
 Read the specific error messages. Common fixes:
+
 - Unused imports/variables → remove them
 - Formatting → `pnpm lint:fix` handles most automatically
 - ESLint rule violations → fix the code, never add `eslint-disable`
@@ -148,6 +149,7 @@ Read the specific error messages. Common fixes:
 ### Type check failures
 
 Read the `svelte-check` / TypeScript errors with file paths and line numbers. For each:
+
 1. Read the file at the referenced line.
 2. Understand the type mismatch.
 3. Fix with proper types — don't use `any` or `as` casts unless absolutely necessary.
@@ -159,12 +161,14 @@ Usually import resolution or missing exports. Read the Vite error, trace the imp
 ### Test failures
 
 Read the assertion diff. Understand what changed and whether the test expectation or the code is wrong:
+
 - If the code is correct and the test is stale → update the test.
 - If the code introduced a regression → fix the code.
 
 ### Review comments
 
 For each inline comment:
+
 1. Read the file at the referenced location.
 2. Read surrounding context (±20 lines).
 3. Determine if the reviewer's point is valid.
@@ -201,6 +205,7 @@ pnpm fix
 Then spawn the **lint**, **typecheck**, and **test** agents in parallel for independent verification.
 
 **If any agent reports FAIL:**
+
 1. Read the failure.
 2. Fix it.
 3. Re-run `pnpm fix` and re-spawn all three agents.

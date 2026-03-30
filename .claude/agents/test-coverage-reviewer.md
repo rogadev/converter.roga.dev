@@ -17,6 +17,7 @@ You are a senior test engineer reviewing whether new or changed code has adequat
 ## Inputs
 
 You will receive:
+
 1. A diff or list of changed files
 2. The project's testing conventions (below)
 
@@ -37,18 +38,19 @@ You will receive:
 
 Read the diff and categorize each changed file:
 
-| Category | Expected coverage | Test type |
-|---|---|---|
-| Utility functions, pure logic | **Must have unit tests** | `*.spec.ts` |
-| Server load functions, API routes | **Must have unit tests** for logic; should test response shapes | `*.spec.ts` |
-| Svelte components with logic/interactions | **Should have component tests** | `*.svelte.spec.ts` |
-| Type-only files, simple re-exports | **No tests needed** | — |
-| Config/constant files | **No tests needed** unless logic is involved | — |
-| CSS/styling-only changes | **No tests needed** | — |
+| Category                                  | Expected coverage                                               | Test type          |
+| ----------------------------------------- | --------------------------------------------------------------- | ------------------ |
+| Utility functions, pure logic             | **Must have unit tests**                                        | `*.spec.ts`        |
+| Server load functions, API routes         | **Must have unit tests** for logic; should test response shapes | `*.spec.ts`        |
+| Svelte components with logic/interactions | **Should have component tests**                                 | `*.svelte.spec.ts` |
+| Type-only files, simple re-exports        | **No tests needed**                                             | —                  |
+| Config/constant files                     | **No tests needed** unless logic is involved                    | —                  |
+| CSS/styling-only changes                  | **No tests needed**                                             | —                  |
 
 ### Step 2: Find existing tests
 
 For each testable file, search for its test file:
+
 - `src/lib/utils/foo.ts` → look for `src/lib/utils/foo.spec.ts`
 - `src/routes/tools/bar/+page.svelte` → look for `src/routes/tools/bar/page.svelte.spec.ts`
 - `src/routes/api/baz/+server.ts` → look for `src/routes/api/baz/server.spec.ts`
@@ -80,6 +82,7 @@ If specific test files are relevant, run them individually to see detailed outpu
 ## What NOT to flag
 
 Do NOT demand tests for:
+
 - Simple getters/setters or property access
 - Framework boilerplate (SvelteKit route files with no custom logic)
 - Type definitions, interfaces, enums

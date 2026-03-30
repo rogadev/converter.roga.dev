@@ -22,8 +22,8 @@ export class MockFileFactory {
    */
   static createImageFile(
     name: string,
-    type: 'image/png' | 'image/jpeg' | 'image/webp' | 'image/avif' = 'image/jpeg',
-    options: MockFileOptions = {}
+    type: "image/png" | "image/jpeg" | "image/webp" | "image/avif" = "image/jpeg",
+    options: MockFileOptions = {},
   ): File {
     const { size = 1024, lastModified = Date.now(), content } = options;
 
@@ -32,43 +32,36 @@ export class MockFileFactory {
 
     return new File([fileContent as BlobPart], name, {
       type,
-      lastModified
+      lastModified,
     });
   }
 
   /**
    * Creates a mock video file (MP4)
    */
-  static createVideoFile(
-    name: string = 'test-video.mp4',
-    options: MockFileOptions = {}
-  ): File {
+  static createVideoFile(name: string = "test-video.mp4", options: MockFileOptions = {}): File {
     const { size = 5 * 1024 * 1024, lastModified = Date.now(), content } = options; // 5MB default
 
     const fileContent = content || this.generateVideoContent(size);
 
     return new File([fileContent as BlobPart], name, {
-      type: 'video/mp4',
-      lastModified
+      type: "video/mp4",
+      lastModified,
     });
   }
 
   /**
    * Creates a corrupted file that should trigger error handling
    */
-  static createCorruptedFile(
-    name: string,
-    type: string,
-    options: MockFileOptions = {}
-  ): File {
+  static createCorruptedFile(name: string, type: string, options: MockFileOptions = {}): File {
     const { size = 100, lastModified = Date.now() } = options;
 
     // Create invalid content that should cause conversion errors
-    const corruptedContent = new Uint8Array(size).fill(0xFF);
+    const corruptedContent = new Uint8Array(size).fill(0xff);
 
     return new File([corruptedContent], name, {
       type,
-      lastModified
+      lastModified,
     });
   }
 
@@ -79,10 +72,10 @@ export class MockFileFactory {
     name: string,
     type: string,
     sizeMB: number,
-    options: Omit<MockFileOptions, 'size'> = {}
+    options: Omit<MockFileOptions, "size"> = {},
   ): File {
     if (sizeMB <= 0) {
-      throw new Error('File size must be greater than 0');
+      throw new Error("File size must be greater than 0");
     }
     if (sizeMB > 1000) {
       console.warn(`Creating very large file (${sizeMB}MB). This may cause memory issues.`);
@@ -96,23 +89,20 @@ export class MockFileFactory {
 
     return new File([content as BlobPart], name, {
       type,
-      lastModified
+      lastModified,
     });
   }
 
   /**
    * Creates an unsupported file type for testing error handling
    */
-  static createUnsupportedFile(
-    name: string = 'test.txt',
-    options: MockFileOptions = {}
-  ): File {
+  static createUnsupportedFile(name: string = "test.txt", options: MockFileOptions = {}): File {
     const { size = 100, lastModified = Date.now() } = options;
-    const content = new TextEncoder().encode('This is an unsupported file type');
+    const content = new TextEncoder().encode("This is an unsupported file type");
 
     return new File([content], name, {
-      type: 'text/plain',
-      lastModified
+      type: "text/plain",
+      lastModified,
     });
   }
 
@@ -120,9 +110,9 @@ export class MockFileFactory {
    * Creates a file with no extension for edge case testing
    */
   static createFileWithoutExtension(
-    name: string = 'noextension',
-    type: string = 'image/jpeg',
-    options: MockFileOptions = {}
+    name: string = "noextension",
+    type: string = "image/jpeg",
+    options: MockFileOptions = {},
   ): File {
     return this.createImageFile(name, type as any, options);
   }
@@ -138,11 +128,11 @@ export class MockFileFactory {
     unsupported: File;
   } {
     return {
-      smallImage: this.createImageFile('small.jpg', 'image/jpeg', { size: 1024 }),
-      largeImage: this.createImageFile('large.png', 'image/png', { size: 2 * 1024 * 1024 }),
-      video: this.createVideoFile('test.mp4', { size: 10 * 1024 * 1024 }),
-      corrupted: this.createCorruptedFile('corrupted.jpg', 'image/jpeg'),
-      unsupported: this.createUnsupportedFile('document.txt')
+      smallImage: this.createImageFile("small.jpg", "image/jpeg", { size: 1024 }),
+      largeImage: this.createImageFile("large.png", "image/png", { size: 2 * 1024 * 1024 }),
+      video: this.createVideoFile("test.mp4", { size: 10 * 1024 * 1024 }),
+      corrupted: this.createCorruptedFile("corrupted.jpg", "image/jpeg"),
+      unsupported: this.createUnsupportedFile("document.txt"),
     };
   }
 
@@ -154,24 +144,24 @@ export class MockFileFactory {
 
     // Add format-specific headers for more realistic files
     switch (type) {
-      case 'image/jpeg':
+      case "image/jpeg":
         // JPEG header: FF D8 FF
-        content[0] = 0xFF;
-        content[1] = 0xD8;
-        content[2] = 0xFF;
+        content[0] = 0xff;
+        content[1] = 0xd8;
+        content[2] = 0xff;
         break;
-      case 'image/png':
+      case "image/png":
         // PNG header: 89 50 4E 47 0D 0A 1A 0A
         content[0] = 0x89;
         content[1] = 0x50;
-        content[2] = 0x4E;
+        content[2] = 0x4e;
         content[3] = 0x47;
-        content[4] = 0x0D;
-        content[5] = 0x0A;
-        content[6] = 0x1A;
-        content[7] = 0x0A;
+        content[4] = 0x0d;
+        content[5] = 0x0a;
+        content[6] = 0x1a;
+        content[7] = 0x0a;
         break;
-      case 'image/webp':
+      case "image/webp":
         // WebP header: RIFF....WEBP
         content[0] = 0x52; // R
         content[1] = 0x49; // I
@@ -215,7 +205,10 @@ export class MockFileFactory {
   /**
    * Validates a file meets certain criteria
    */
-  static validateFile(file: File, options: FileValidationOptions = {}): {
+  static validateFile(
+    file: File,
+    options: FileValidationOptions = {},
+  ): {
     valid: boolean;
     errors: string[];
   } {
@@ -240,7 +233,7 @@ export class MockFileFactory {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -251,19 +244,19 @@ export class MockFileFactory {
     name: string,
     type: string,
     validation: FileValidationOptions,
-    options: MockFileOptions = {}
+    options: MockFileOptions = {},
   ): File {
     const { minSize = 1024, maxSize = 10 * 1024 * 1024 } = validation;
     const size = Math.max(minSize, Math.min(maxSize, options.size || minSize));
 
     const file = new File([this.generateContent(type, size) as BlobPart], name, {
       type,
-      lastModified: options.lastModified || Date.now()
+      lastModified: options.lastModified || Date.now(),
     });
 
     const validationResult = this.validateFile(file, validation);
     if (!validationResult.valid) {
-      throw new Error(`File validation failed: ${validationResult.errors.join(', ')}`);
+      throw new Error(`File validation failed: ${validationResult.errors.join(", ")}`);
     }
 
     return file;
@@ -295,9 +288,9 @@ export class MockFileFactory {
    * Generates content based on file type
    */
   private static generateContent(type: string, size: number): Uint8Array {
-    if (type.startsWith('image/')) {
+    if (type.startsWith("image/")) {
       return this.generateImageContent(type, size);
-    } else if (type.startsWith('video/')) {
+    } else if (type.startsWith("video/")) {
       return this.generateVideoContent(size);
     } else {
       return this.generateLargeContent(size);
@@ -310,19 +303,19 @@ export class MockFileFactory {
  */
 export const TestFiles = {
   // Common image formats
-  jpegImage: () => MockFileFactory.createImageFile('test.jpg', 'image/jpeg'),
-  pngImage: () => MockFileFactory.createImageFile('test.png', 'image/png'),
-  webpImage: () => MockFileFactory.createImageFile('test.webp', 'image/webp'),
-  avifImage: () => MockFileFactory.createImageFile('test.avif', 'image/avif'),
+  jpegImage: () => MockFileFactory.createImageFile("test.jpg", "image/jpeg"),
+  pngImage: () => MockFileFactory.createImageFile("test.png", "image/png"),
+  webpImage: () => MockFileFactory.createImageFile("test.webp", "image/webp"),
+  avifImage: () => MockFileFactory.createImageFile("test.avif", "image/avif"),
 
   // Video files
-  mp4Video: () => MockFileFactory.createVideoFile('test.mp4'),
+  mp4Video: () => MockFileFactory.createVideoFile("test.mp4"),
 
   // Edge cases
-  corruptedImage: () => MockFileFactory.createCorruptedFile('corrupted.jpg', 'image/jpeg'),
-  unsupportedFile: () => MockFileFactory.createUnsupportedFile('document.txt'),
-  largeImage: () => MockFileFactory.createLargeFile('large.jpg', 'image/jpeg', 50), // 50MB
+  corruptedImage: () => MockFileFactory.createCorruptedFile("corrupted.jpg", "image/jpeg"),
+  unsupportedFile: () => MockFileFactory.createUnsupportedFile("document.txt"),
+  largeImage: () => MockFileFactory.createLargeFile("large.jpg", "image/jpeg", 50), // 50MB
 
   // Batch sets
-  testSet: () => MockFileFactory.createTestFileSet()
+  testSet: () => MockFileFactory.createTestFileSet(),
 };

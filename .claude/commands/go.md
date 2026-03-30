@@ -13,6 +13,7 @@ You are a SvelteKit 2 / Svelte 5 expert and senior full-stack engineer. Your job
 If a plan was produced by `/next` in this session, use it. If not, ask the user to provide one or run `/next` first.
 
 Read the plan carefully. Understand:
+
 - What issue is being worked on (beads ID, GH number)
 - The acceptance criteria
 - The implementation steps in order
@@ -42,6 +43,7 @@ Work through the plan step by step. For each step:
 ## Step 3: Documentation (if applicable)
 
 Only if the plan's documentation section specifies updates:
+
 - Update JSDoc on new or changed public functions/components.
 - Update `docs/` files if architecture, features, or APIs changed.
 
@@ -66,6 +68,7 @@ These agents **only collect and report** — they do not fix anything. You, with
 **Phase C — Fix and re-verify (if needed):**
 
 If any agent reports **FAIL**:
+
 1. Read the failure details.
 2. Fix the issues.
 3. Re-run Phase A and Phase B from scratch.
@@ -86,6 +89,7 @@ Wait for it to return. The impact line MUST appear as the last line of your fina
 **Do NOT commit or stage.** Changes stay in the working tree for `/deep-review` and `/ship`.
 
 Summarize:
+
 - What was implemented
 - What tests were added/modified
 - Files changed

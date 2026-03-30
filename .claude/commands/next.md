@@ -28,6 +28,7 @@ gh issue list --state open --limit 20 --json number,title,labels,milestone,updat
 ```
 
 **Selection criteria** (in priority order):
+
 1. Critical/blocking bugs (look for priority labels)
 2. Current sprint milestone items
 3. Issues the user has indicated they want done next
@@ -46,6 +47,7 @@ gh issue view <number> --json title,body,labels,comments,milestone
 ```
 
 Document:
+
 - **Acceptance criteria**: What does "done" look like?
 - **Edge cases**: What could go wrong?
 - **Constraints**: Mobile/responsive, accessibility, API availability?
@@ -71,6 +73,7 @@ Read the affected files and their tests. Identify:
 Break the GitHub issue into concrete, fine-grained bd tasks. Each task should represent one logical unit of work that can be completed and verified independently.
 
 **Guidelines:**
+
 - Each task title should be specific and actionable (e.g., "Add `analyzeSnapshot` utility function" not "Implement backend")
 - Reference the GH issue number in the first task's notes field
 - Set up dependencies between tasks that must happen in order

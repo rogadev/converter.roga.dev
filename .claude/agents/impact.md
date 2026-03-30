@@ -14,6 +14,7 @@ You are a metrics agent. Your only job is to calculate the size and estimated hu
 ## Task
 
 Determine the diff target:
+
 - If the user says "uncommitted", "working tree", or "unstaged": use `git diff` (no ref) for unstaged, and `git diff --cached` for staged. Combine both.
 - If the user specifies a range (e.g., `HEAD~3`): use that.
 - Otherwise default to `git diff --shortstat HEAD~1` for the last commit.
@@ -27,12 +28,12 @@ Determine the diff target:
 4. Calculate **meaningful lines changed** = insertions + deletions (after filtering).
 5. Estimate pre-AI dev time using this heuristic:
 
-| Lines changed | Rate | Rationale |
-|---|---|---|
-| 1–50 | 40 lines/hr | Small, focused change — mostly setup and context-switching overhead |
-| 51–200 | 50 lines/hr | Typical feature work — coding, testing, debugging |
-| 201–500 | 55 lines/hr | Larger feature — developer is "in the zone", less overhead per line |
-| 500+ | 60 lines/hr | Large change — bulk of work is mechanical, patterns repeat |
+| Lines changed | Rate        | Rationale                                                           |
+| ------------- | ----------- | ------------------------------------------------------------------- |
+| 1–50          | 40 lines/hr | Small, focused change — mostly setup and context-switching overhead |
+| 51–200        | 50 lines/hr | Typical feature work — coding, testing, debugging                   |
+| 201–500       | 55 lines/hr | Larger feature — developer is "in the zone", less overhead per line |
+| 500+          | 60 lines/hr | Large change — bulk of work is mechanical, patterns repeat          |
 
 Round to nearest 15 minutes. Minimum 15 minutes.
 
@@ -45,6 +46,7 @@ Report exactly this format, nothing else:
 ```
 
 Examples:
+
 ```
 +47 -12 | ~1h 0m pre-AI est.
 +234 -89 | ~5h 45m pre-AI est.

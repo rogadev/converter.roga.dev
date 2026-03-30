@@ -1,7 +1,7 @@
 /**
  * Centralized mock setup for consistent testing across the application
  */
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 export interface MockSetupOptions {
   includeWebUtils?: boolean;
@@ -19,7 +19,7 @@ export class TestMocks {
     const {
       includeWebUtils = true,
       includeConversionService = true,
-      includeURLMocks = true
+      includeURLMocks = true,
     } = options;
 
     if (includeConversionService) {
@@ -41,11 +41,11 @@ export class TestMocks {
    * Sets up ConversionService mocks
    */
   static setupConversionServiceMocks() {
-    vi.mock('$lib/conversion-service', () => ({
+    vi.mock("$lib/conversion-service", () => ({
       ConversionService: {
         convertImage: vi.fn(),
-        convertVideo: vi.fn()
-      }
+        convertVideo: vi.fn(),
+      },
     }));
   }
 
@@ -53,10 +53,10 @@ export class TestMocks {
    * Sets up web utilities mocks
    */
   static setupWebUtilsMocks() {
-    vi.mock('$lib/converters/web', () => ({
+    vi.mock("$lib/converters/web", () => ({
       downloadBlob: vi.fn(),
       humanFileSize: vi.fn((size: number) => `${(size / 1024).toFixed(1)} KB`),
-      renameFile: vi.fn((name: string, ext: string) => name.replace(/\.[^/.]+$/, `.${ext}`))
+      renameFile: vi.fn((name: string, ext: string) => name.replace(/\.[^/.]+$/, `.${ext}`)),
     }));
   }
 
@@ -64,7 +64,7 @@ export class TestMocks {
    * Sets up URL API mocks for browser environment
    */
   static setupURLMocks() {
-    globalThis.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+    globalThis.URL.createObjectURL = vi.fn(() => "blob:mock-url");
     globalThis.URL.revokeObjectURL = vi.fn();
   }
 
@@ -72,12 +72,12 @@ export class TestMocks {
    * Gets mocked conversion service for test assertions
    */
   static async getConversionServiceMocks() {
-    const { ConversionService } = await import('$lib/conversion-service');
+    const { ConversionService } = await import("$lib/conversion-service");
     return {
       ConversionService: {
         convertImage: ConversionService.convertImage as any,
-        convertVideo: ConversionService.convertVideo as any
-      }
+        convertVideo: ConversionService.convertVideo as any,
+      },
     };
   }
 
@@ -85,7 +85,7 @@ export class TestMocks {
    * Gets mocked web utils for test assertions
    */
   static async getWebUtilsMocks() {
-    return await import('$lib/converters/web');
+    return await import("$lib/converters/web");
   }
 
   /**
@@ -95,13 +95,13 @@ export class TestMocks {
     const mockConversionService = await this.getConversionServiceMocks();
 
     mockConversionService.ConversionService.convertImage.mockResolvedValue({
-      blob: new Blob(['converted image'], { type: 'image/png' }),
-      filename: 'test.png'
+      blob: new Blob(["converted image"], { type: "image/png" }),
+      filename: "test.png",
     });
 
     mockConversionService.ConversionService.convertVideo.mockResolvedValue({
-      blob: new Blob(['converted gif'], { type: 'image/gif' }),
-      filename: 'test.gif'
+      blob: new Blob(["converted gif"], { type: "image/gif" }),
+      filename: "test.gif",
     });
   }
 

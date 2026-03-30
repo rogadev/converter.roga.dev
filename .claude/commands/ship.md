@@ -18,6 +18,7 @@ git branch --show-current             # Confirm we're on the expected branch
 ```
 
 **Abort if:**
+
 - No modified or staged files — nothing to ship.
 - Current branch is not `dev` — confirm with the user before proceeding.
 
@@ -38,11 +39,13 @@ If `pnpm fix` modifies files, that's fine — those fixes become part of the com
 3. Do NOT stage generated/ephemeral paths: `coverage/`, `.svelte-kit/`, `node_modules/`, `build/`, `.beads/`.
 4. Create **one clean commit** that represents the entire unit of work.
 5. Use a high-quality commit message:
+
    ```
    <type>(<scope>): <subject>
 
    <body with context — reference GH issue number>
    ```
+
    Types: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`
 
    **Always reference the GitHub issue** in the commit body (e.g., `Closes #57` or `Part of #57`).
@@ -82,6 +85,7 @@ Then re-run `pnpm fix` to confirm the rebase didn't break anything. If clean, pu
 ## Step 6: Confirm
 
 Report:
+
 - Commit pushed (hash and message)
 - Branch and remote
 - GH issue number referenced in the commit

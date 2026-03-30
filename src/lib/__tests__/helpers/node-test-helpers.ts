@@ -3,8 +3,8 @@
  * These helpers don't import browser-specific APIs
  */
 
-export { MockFileFactory, TestFiles } from './mock-file-factory';
-export { ConversionTestHarness, TestHarness } from './conversion-test-harness';
+export { MockFileFactory, TestFiles } from "./mock-file-factory";
+export { ConversionTestHarness, TestHarness } from "./conversion-test-harness";
 
 // Re-export only the parts that work in Node.js
 export const NodeTestHelpers = {
@@ -14,5 +14,5 @@ export const NodeTestHelpers = {
 
   createTestBlob: (content: string, type: string) => {
     return new Blob([content], { type });
-  }
+  },
 };

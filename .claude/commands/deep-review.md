@@ -43,6 +43,7 @@ git diff HEAD                 # Full diff
 > **Why `git diff HEAD`?** In this workflow, `/go` does not commit. All changes live in the working tree. `git diff HEAD` captures both staged and unstaged changes relative to the last commit, which is the remote baseline.
 
 Read every changed file in full — not just the diff hunks. Understand:
+
 - **What is the goal?** One sentence.
 - **What files are touched?** Categorize: routes, components, server logic, utilities, config, types, tests.
 - **What is the blast radius?** Could this break other pages, endpoints, shared state?
@@ -60,6 +61,7 @@ Spawn the **lint**, **typecheck**, and **test** agents in parallel. They run aut
 ### Agent 2: Security review
 
 Spawn the **security-reviewer** agent. It reviews only the changed code for:
+
 - Input validation gaps on server entry points
 - Data exposure (secrets in load function returns, client props, logs)
 - XSS vectors (`{@html}`, unsanitized user content)
@@ -69,6 +71,7 @@ Spawn the **security-reviewer** agent. It reviews only the changed code for:
 ### Agent 3: Architecture review
 
 Spawn the **architecture-reviewer** agent. It reviews only the changed code for:
+
 - SvelteKit routing and file convention correctness
 - Load function correctness (server vs universal, data leaking)
 - Server/client boundary violations
@@ -78,6 +81,7 @@ Spawn the **architecture-reviewer** agent. It reviews only the changed code for:
 ### Agent 4: Quality review
 
 Spawn the **quality-reviewer** agent. It reviews only the changed code for:
+
 - TypeScript strictness (`any`, unsafe casts, missing types)
 - Error handling (swallowed errors, missing error boundaries)
 - Performance (waterfalls, N+1, expensive reactive computations)
@@ -87,6 +91,7 @@ Spawn the **quality-reviewer** agent. It reviews only the changed code for:
 ### Agent 5: Test coverage review
 
 Spawn the **test-coverage-reviewer** agent. It reviews whether new/changed code has sufficient, meaningful test coverage:
+
 - Identifies testable changes vs files that don't need tests
 - Reads actual test files to verify they cover the changed code paths
 - Checks branch coverage, edge cases, and assertion quality
@@ -109,14 +114,14 @@ Wait for all agents to return. Then critically evaluate every finding:
 
 ### Filtering rules
 
-| Situation | Action |
-|---|---|
-| Finding is fabricated (code doesn't match description) | **Discard** |
-| Severity is inflated (Warning dressed as Blocker) | **Downgrade** |
-| Finding is real but pre-existing and unrelated to diff | **Move to Pre-existing** at reduced severity |
-| Finding is speculative ("this could theoretically...") | **Discard** — report only what you can prove |
-| Multiple agents report the same issue | **Merge** into one finding, note which agents confirmed it |
-| Agent returns "No issues found" | **Preserve** — this is a valid, valuable signal |
+| Situation                                              | Action                                                     |
+| ------------------------------------------------------ | ---------------------------------------------------------- |
+| Finding is fabricated (code doesn't match description) | **Discard**                                                |
+| Severity is inflated (Warning dressed as Blocker)      | **Downgrade**                                              |
+| Finding is real but pre-existing and unrelated to diff | **Move to Pre-existing** at reduced severity               |
+| Finding is speculative ("this could theoretically...") | **Discard** — report only what you can prove               |
+| Multiple agents report the same issue                  | **Merge** into one finding, note which agents confirmed it |
+| Agent returns "No issues found"                        | **Preserve** — this is a valid, valuable signal            |
 
 ---
 

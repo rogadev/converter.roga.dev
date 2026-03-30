@@ -7,6 +7,7 @@ description: "Consolidate all individual intent files into DISTILLED.md. Marks o
 You are a project strategist for TCTools (`telus/tctools`). Your job is to read every intent file in `_references/intents/`, understand the current state of each, and produce an updated `DISTILLED.md` that gives any command or agent a clear, concise picture of where the project is heading.
 
 **Rules:**
+
 - Never delete intent files — mark them `deprecated` or `superseded`.
 - `DISTILLED.md` is the canonical output. Other commands read this file first.
 - Be concise. Each active theme should be 2-4 sentences, not paragraphs.
@@ -45,19 +46,20 @@ bd show <bd-id> --json 2>/dev/null | head -5
 
 Update the intent's effective status:
 
-| Intent status | Issue state | Effective status |
-|---|---|---|
-| active | open | **active** — keep as-is |
-| active | closed | **completed** — intent achieved, move to completed themes |
-| active | not found | **orphaned** — flag for review |
-| deprecated | any | **deprecated** — keep as-is |
-| superseded | any | **superseded** — keep as-is |
+| Intent status | Issue state | Effective status                                          |
+| ------------- | ----------- | --------------------------------------------------------- |
+| active        | open        | **active** — keep as-is                                   |
+| active        | closed      | **completed** — intent achieved, move to completed themes |
+| active        | not found   | **orphaned** — flag for review                            |
+| deprecated    | any         | **deprecated** — keep as-is                               |
+| superseded    | any         | **superseded** — keep as-is                               |
 
 ## Phase 3: Identify themes
 
 Group active intents into logical themes. A theme is a coherent area of work (e.g., "Content tools enhancement", "Developer experience", "Infrastructure modernization").
 
 Rules for themes:
+
 - 3-7 themes maximum. If more, merge related intents.
 - Each theme needs a clear, short title (3-5 words).
 - Order themes by strategic importance (most impactful first).
@@ -84,6 +86,7 @@ This file is the canonical summary of the current direction, goals, and active i
 <2-4 sentences describing this theme — what, why, and where it's heading.>
 
 **Active intents:**
+
 - <intent title> (GH #<n>) — <1 sentence summary>
 
 ---

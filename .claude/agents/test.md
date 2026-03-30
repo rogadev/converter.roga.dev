@@ -34,9 +34,11 @@ For each failure:
 - **Test:** `{test suite name}` > `{test name}`
 - **File:** `path/to/test.ts`
 - **Error:**
-  ```
-  {exact assertion error or stack trace, trimmed to relevant lines}
-  ```
+```
+
+{exact assertion error or stack trace, trimmed to relevant lines}
+
+```
 
 ### Skipped (if any)
 

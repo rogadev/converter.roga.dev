@@ -41,6 +41,7 @@ Blob → download or preview
 ```
 
 **Key design decisions:**
+
 - FFmpeg WASM is dynamically imported on demand to keep the initial bundle small
 - Converters are pure functions; ConversionService handles orchestration; UI handles state/presentation
 - ICO output wraps a PNG blob with an ICO header
@@ -50,6 +51,7 @@ Blob → download or preview
 ## Testing
 
 Two Vitest projects configured in vite.config.ts:
+
 - **server** (Node): `src/**/*.test.ts` — tests for converters, services, utilities
 - **client** (Playwright browser): `src/**/*.svelte.test.ts` — component/integration tests using `vitest-browser-svelte`
 
@@ -60,6 +62,7 @@ Shared test helpers live in `src/lib/__tests__/helpers/` (mock file factory, con
 ## Svelte 5 Conventions
 
 This project uses Svelte 5 runes exclusively (`$state`, `$derived`, `$props`, `$bindable`). Key rules from the project's code review checklist:
+
 - Prefer `$derived` over `$effect` for computed values
 - Avoid `$effect` for side effects that should be event handlers
 - Use `{#snippet}` over slots where appropriate

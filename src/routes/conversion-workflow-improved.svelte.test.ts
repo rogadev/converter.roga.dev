@@ -1,20 +1,20 @@
-import { page } from '@vitest/browser/context';
-import { describe, expect, it } from 'vitest';
-import { render } from 'vitest-browser-svelte';
-import Page from './+page.svelte';
-import { TestFiles } from '$lib/__tests__/helpers/mock-file-factory';
-import { UITestHelpers } from '$lib/__tests__/helpers/ui-test-helpers';
-import { ComponentTestSuite } from '$lib/__tests__/helpers/base-test-suite';
-import { TestMocks } from '$lib/__tests__/helpers/test-mocks';
+import { page } from "@vitest/browser/context";
+import { describe, expect, it } from "vitest";
+import { render } from "vitest-browser-svelte";
+import Page from "./+page.svelte";
+import { TestFiles } from "$lib/__tests__/helpers/mock-file-factory";
+import { UITestHelpers } from "$lib/__tests__/helpers/ui-test-helpers";
+import { ComponentTestSuite } from "$lib/__tests__/helpers/base-test-suite";
+import { TestMocks } from "$lib/__tests__/helpers/test-mocks";
 
 // Set up mocks at module level
 TestMocks.setup({
   includeWebUtils: true,
   includeConversionService: true,
-  includeURLMocks: true
+  includeURLMocks: true,
 });
 
-describe('Conversion Workflow UI States', () => {
+describe("Conversion Workflow UI States", () => {
   // Use the base test suite for consistent setup
   const testSuite = new (class extends ComponentTestSuite {
     async customSetup() {
@@ -23,11 +23,11 @@ describe('Conversion Workflow UI States', () => {
     }
   })();
 
-  describe('Loading States', () => {
-    it('should show loading state during image conversion', async () => {
+  describe("Loading States", () => {
+    it("should show loading state during image conversion", async () => {
       // Arrange: Mock a slow conversion
       let resolveConversion: (value: any) => void;
-      const conversionPromise = new Promise(resolve => {
+      const conversionPromise = new Promise((resolve) => {
         resolveConversion = resolve;
       });
 
@@ -42,28 +42,28 @@ describe('Conversion Workflow UI States', () => {
       await UITestHelpers.triggerConversion();
 
       // Assert: Should show loading state
-      const loadingButton = page.getByRole('button', { name: /converting/i });
+      const loadingButton = page.getByRole("button", { name: /converting/i });
       await expect.element(loadingButton).toBeInTheDocument();
       await expect.element(loadingButton).toBeDisabled();
-      await expect.element(loadingButton).toHaveTextContent('Converting…');
+      await expect.element(loadingButton).toHaveTextContent("Converting…");
 
       // Complete the conversion
       resolveConversion!({
-        blob: new Blob(['converted'], { type: 'image/png' }),
-        filename: 'test.png'
+        blob: new Blob(["converted"], { type: "image/png" }),
+        filename: "test.png",
       });
 
       // Wait for completion and verify normal state restored
       await UITestHelpers.waitForConversionComplete();
-      const normalButton = page.getByRole('button', { name: /start conversion/i });
+      const normalButton = page.getByRole("button", { name: /start conversion/i });
       await expect.element(normalButton).toBeInTheDocument();
       await expect.element(normalButton).toBeEnabled();
     });
 
-    it('should prevent multiple simultaneous conversions', async () => {
+    it("should prevent multiple simultaneous conversions", async () => {
       // Arrange: Mock a slow conversion
       let resolveConversion: (value: any) => void;
-      const conversionPromise = new Promise(resolve => {
+      const conversionPromise = new Promise((resolve) => {
         resolveConversion = resolve;
       });
 
@@ -78,7 +78,7 @@ describe('Conversion Workflow UI States', () => {
       await UITestHelpers.triggerConversion();
 
       // Try to start second conversion
-      const loadingButton = page.getByRole('button', { name: /converting/i });
+      const loadingButton = page.getByRole("button", { name: /converting/i });
       await loadingButton.click();
 
       // Assert: Should still only have one call
@@ -86,14 +86,14 @@ describe('Conversion Workflow UI States', () => {
 
       // Cleanup
       resolveConversion!({
-        blob: new Blob(['converted'], { type: 'image/png' }),
-        filename: 'test.png'
+        blob: new Blob(["converted"], { type: "image/png" }),
+        filename: "test.png",
       });
     });
   });
 
-  describe('Success States', () => {
-    it('should show output preview after successful conversion', async () => {
+  describe("Success States", () => {
+    it("should show output preview after successful conversion", async () => {
       // Arrange: Use default successful conversion setup
       render(Page);
       const testFile = TestFiles.jpegImage();
@@ -104,23 +104,20 @@ describe('Conversion Workflow UI States', () => {
       await UITestHelpers.waitForConversionComplete();
 
       // Assert
-      const outputImage = page.getByAltText('Output');
+      const outputImage = page.getByAltText("Output");
       await expect.element(outputImage).toBeInTheDocument();
-      await expect.element(outputImage).toHaveAttribute('src', 'blob:mock-url');
+      await expect.element(outputImage).toHaveAttribute("src", "blob:mock-url");
 
-      const downloadButton = page.getByRole('button', { name: /download again/i });
+      const downloadButton = page.getByRole("button", { name: /download again/i });
       await expect.element(downloadButton).toBeInTheDocument();
       await expect.element(downloadButton).toBeEnabled();
 
       // Verify download was triggered
       const mockWebUtils = await TestMocks.getWebUtilsMocks();
-      expect(mockWebUtils.downloadBlob).toHaveBeenCalledWith(
-        expect.any(Blob),
-        'test.png'
-      );
+      expect(mockWebUtils.downloadBlob).toHaveBeenCalledWith(expect.any(Blob), "test.png");
     });
 
-    it('should display file size information', async () => {
+    it("should display file size information", async () => {
       render(Page);
       const testFile = TestFiles.jpegImage();
       await UITestHelpers.uploadFile(testFile);
@@ -133,12 +130,12 @@ describe('Conversion Workflow UI States', () => {
     });
   });
 
-  describe('Error States', () => {
-    it('should display error message when conversion fails', async () => {
+  describe("Error States", () => {
+    it("should display error message when conversion fails", async () => {
       // Arrange: Mock conversion failure
       const mockService = await TestMocks.getConversionServiceMocks();
       mockService.ConversionService.convertImage.mockRejectedValue(
-        new Error('Image conversion failed')
+        new Error("Image conversion failed"),
       );
 
       render(Page);
@@ -151,10 +148,10 @@ describe('Conversion Workflow UI States', () => {
 
       // Assert
       const errorMessage = await UITestHelpers.getErrorMessage();
-      expect(errorMessage).toContain('conversion failed');
+      expect(errorMessage).toContain("conversion failed");
 
       // Button should be re-enabled
-      const convertButton = page.getByRole('button', { name: /start conversion/i });
+      const convertButton = page.getByRole("button", { name: /start conversion/i });
       await expect.element(convertButton).toBeEnabled();
 
       // Should not show output
@@ -162,14 +159,14 @@ describe('Conversion Workflow UI States', () => {
       expect(hasOutput).toBe(false);
     });
 
-    it('should clear error message when starting new conversion', async () => {
+    it("should clear error message when starting new conversion", async () => {
       // Arrange: First conversion fails
       const mockService = await TestMocks.getConversionServiceMocks();
       mockService.ConversionService.convertImage
-        .mockRejectedValueOnce(new Error('First conversion failed'))
+        .mockRejectedValueOnce(new Error("First conversion failed"))
         .mockResolvedValue({
-          blob: new Blob(['success'], { type: 'image/png' }),
-          filename: 'test.png'
+          blob: new Blob(["success"], { type: "image/png" }),
+          filename: "test.png",
         });
 
       render(Page);
@@ -193,16 +190,16 @@ describe('Conversion Workflow UI States', () => {
     });
   });
 
-  describe('File Type Handling', () => {
-    it('should show appropriate options for different file types', async () => {
+  describe("File Type Handling", () => {
+    it("should show appropriate options for different file types", async () => {
       render(Page);
 
       // Test image file
       const imageFile = TestFiles.jpegImage();
       await UITestHelpers.uploadFile(imageFile);
 
-      const webpOption = page.getByText('WebP');
-      const avifOption = page.getByText('AVIF');
+      const webpOption = page.getByText("WebP");
+      const avifOption = page.getByText("AVIF");
       await expect.element(webpOption).toBeInTheDocument();
       await expect.element(avifOption).toBeInTheDocument();
 
@@ -210,7 +207,7 @@ describe('Conversion Workflow UI States', () => {
       const videoFile = TestFiles.mp4Video();
       await UITestHelpers.uploadFile(videoFile);
 
-      const gifOption = page.getByText('GIF');
+      const gifOption = page.getByText("GIF");
       await expect.element(gifOption).toBeInTheDocument();
 
       // Should show video-specific controls
@@ -221,7 +218,7 @@ describe('Conversion Workflow UI States', () => {
       await expect.element(fpsInput).toBeInTheDocument();
     });
 
-    it('should handle unsupported file types gracefully', async () => {
+    it("should handle unsupported file types gracefully", async () => {
       render(Page);
       const unsupportedFile = TestFiles.unsupportedFile();
       await UITestHelpers.uploadFile(unsupportedFile);
@@ -229,7 +226,7 @@ describe('Conversion Workflow UI States', () => {
       const unsupportedMessage = page.getByText(/unsupported file type/i);
       await expect.element(unsupportedMessage).toBeInTheDocument();
 
-      const convertButton = page.getByLabelText('Start file conversion');
+      const convertButton = page.getByLabelText("Start file conversion");
       await expect.element(convertButton).toBeDisabled();
     });
   });

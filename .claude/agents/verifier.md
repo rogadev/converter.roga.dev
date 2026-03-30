@@ -22,12 +22,12 @@ You will receive a list of findings from review agents, each with a file path, l
 
 For each finding, assign one verdict:
 
-| Verdict | Meaning | Action |
-|---|---|---|
-| ✅ **Confirmed** | The issue is real. The code has the described problem at the referenced location. | Keep as-is |
-| ⚠️ **Overstated** | There's a kernel of truth, but the severity is inflated or the description exaggerates the impact. | Downgrade severity and correct the description |
-| ❌ **Not reproducible** | The claimed issue doesn't exist at the referenced location, or the code is actually correct. | Remove from final report |
-| 🔄 **Needs context** | You can't determine if it's real without additional context (e.g., runtime behavior, external API contracts). | Flag for human review |
+| Verdict                 | Meaning                                                                                                       | Action                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| ✅ **Confirmed**        | The issue is real. The code has the described problem at the referenced location.                             | Keep as-is                                     |
+| ⚠️ **Overstated**       | There's a kernel of truth, but the severity is inflated or the description exaggerates the impact.            | Downgrade severity and correct the description |
+| ❌ **Not reproducible** | The claimed issue doesn't exist at the referenced location, or the code is actually correct.                  | Remove from final report                       |
+| 🔄 **Needs context**    | You can't determine if it's real without additional context (e.g., runtime behavior, external API contracts). | Flag for human review                          |
 
 ## Rules
 
