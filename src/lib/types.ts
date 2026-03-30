@@ -23,6 +23,7 @@ export const SUPPORTED_IMAGE_TYPES = [
   'image/jpeg',
   'image/webp',
   'image/avif',
-  'image/svg+xml'
+  'image/svg+xml',
+  'image/x-icon'
 ] as const;
 export const SUPPORTED_VIDEO_TYPES = ['video/mp4'] as const;

@@ -18,20 +18,16 @@ async function loadFfmpeg() {
 }
 
 export async function convertMp4ToGif(file: File, options: Mp4ToGifOptions = {}): Promise<Blob> {
-  try {
-    console.log('Starting MP4 to GIF conversion...');
-    const { ffmpeg, fetchFile } = await loadFfmpeg();
-    console.log('FFmpeg loaded, starting core load...');
+  const { ffmpeg, fetchFile } = await loadFfmpeg();
 
+  try {
     await ffmpeg.load();
-    console.log('FFmpeg core loaded successfully');
 
     const inputName = 'input.mp4';
     const outputName = 'output.gif';
     const paletteName = 'palette.png';
 
     await ffmpeg.writeFile(inputName, await fetchFile(file));
-    console.log('Input file written to FFmpeg filesystem');
 
     const args: string[] = ['-i', inputName];
     if (options.start != null) {
@@ -48,8 +44,6 @@ export async function convertMp4ToGif(file: File, options: Mp4ToGifOptions = {})
     const filter = `${fpsFilter},${scaleFilter}`;
 
     if (options.highQuality) {
-      // palette generation improves quality
-      console.log('Starting high-quality conversion with palette generation...');
       // First pass: generate palette, honoring seek/duration if provided
       await ffmpeg.exec([
         ...args,
@@ -69,7 +63,6 @@ export async function convertMp4ToGif(file: File, options: Mp4ToGifOptions = {})
         outputName
       ]);
     } else {
-      console.log('Starting standard quality conversion...');
       await ffmpeg.exec([
         ...args,
         '-vf',
@@ -79,7 +72,6 @@ export async function convertMp4ToGif(file: File, options: Mp4ToGifOptions = {})
       ]);
     }
 
-    console.log('Conversion completed, reading output file...');
     const data = await ffmpeg.readFile(outputName);
 
     // Clean up files
@@ -93,14 +85,15 @@ export async function convertMp4ToGif(file: File, options: Mp4ToGifOptions = {})
     }
     await ffmpeg.deleteFile(outputName);
 
-    console.log('Conversion successful, returning blob...');
-    // Convert FileData to BlobPart - data should be Uint8Array for binary files
-    // @ts-expect-error FileData type is compatible with Uint8Array at runtime
-    return new Blob([data], { type: 'image/gif' });
+    if (!(data instanceof Uint8Array)) {
+      throw new Error('Expected binary data from FFmpeg');
+    }
+    const bytes = new ArrayBuffer(data.byteLength);
+    new Uint8Array(bytes).set(data);
+    return new Blob([bytes], { type: 'image/gif' });
   } catch (error) {
-    console.error('Error during MP4 to GIF conversion:', error);
     throw new Error(`Failed to convert MP4 to GIF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  } finally {
+    ffmpeg.terminate();
   }
 }
-
-

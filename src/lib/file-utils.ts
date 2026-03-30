@@ -1,22 +1,21 @@
 import type { FileKind, ImageFormat } from './types';
 
-// Constants for better maintainability
-const MIME_TYPE_PREFIXES = {
-  IMAGE: 'image/',
-  VIDEO: 'video/'
-} as const;
-
-const SUPPORTED_VIDEO_TYPES = ['video/mp4'] as const;
-
 export function detectFileKind(file: File): FileKind {
   if (file.type.startsWith('image/')) return 'image';
   if (file.type === 'video/mp4') return 'video';
   return 'unsupported';
 }
 
+const MIME_TO_FORMAT: Record<string, ImageFormat> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpeg',
+  'image/webp': 'webp',
+  'image/avif': 'avif',
+  'image/x-icon': 'ico',
+};
+
 export function getDefaultImageTarget(file: File): ImageFormat {
-  const mimeType = file.type.toLowerCase();
-  const currentFormat = mimeType.replace('image/', '') as ImageFormat;
+  const currentFormat = MIME_TO_FORMAT[file.type.toLowerCase()];
 
   // Prefer modern formats, but avoid converting to the same format
   const preferredFormats: ImageFormat[] = ['webp', 'avif', 'png', 'jpeg', 'ico'];
@@ -36,5 +35,5 @@ export function formatImageLabel(format: string): string {
 }
 
 export function isValidImageFormat(format: string): format is ImageFormat {
-  return ['png', 'jpeg', 'webp', 'avif'].includes(format);
+  return ['png', 'jpeg', 'webp', 'avif', 'ico'].includes(format);
 }
