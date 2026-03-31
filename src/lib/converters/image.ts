@@ -1,4 +1,4 @@
-import type { ImageFormat, CropRect } from '../types';
+import type { ImageFormat, CropRect } from "../types";
 
 export type { ImageFormat };
 
@@ -16,11 +16,11 @@ interface Dimensions {
 }
 
 const MIME_TYPES: Record<ImageFormat, string> = {
-  png: 'image/png',
-  jpeg: 'image/jpeg',
-  webp: 'image/webp',
-  avif: 'image/avif',
-  ico: 'image/x-icon'
+  png: "image/png",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+  avif: "image/avif",
+  ico: "image/x-icon",
 };
 
 const DEFAULT_SVG_SIZE = 1024;
@@ -37,7 +37,7 @@ function calculateOutputDimensions(
   sourceWidth: number,
   sourceHeight: number,
   maxWidth?: number,
-  maxHeight?: number
+  maxHeight?: number,
 ): Dimensions {
   // Guard against zero/invalid dimensions
   if (sourceWidth <= 0 || sourceHeight <= 0) {
@@ -52,7 +52,7 @@ function calculateOutputDimensions(
     const scale = maxWidth / sourceWidth;
     return {
       width: Math.round(sourceWidth * scale) || 1,
-      height: Math.round(sourceHeight * scale) || 1
+      height: Math.round(sourceHeight * scale) || 1,
     };
   }
 
@@ -60,7 +60,7 @@ function calculateOutputDimensions(
     const scale = maxHeight / sourceHeight;
     return {
       width: Math.round(sourceWidth * scale) || 1,
-      height: Math.round(sourceHeight * scale) || 1
+      height: Math.round(sourceHeight * scale) || 1,
     };
   }
 
@@ -68,7 +68,7 @@ function calculateOutputDimensions(
   const scale = Math.min(maxWidth! / sourceWidth, maxHeight! / sourceHeight, 1);
   return {
     width: Math.round(sourceWidth * scale) || 1,
-    height: Math.round(sourceHeight * scale) || 1
+    height: Math.round(sourceHeight * scale) || 1,
   };
 }
 
@@ -80,30 +80,30 @@ async function renderToBlob(
   height: number,
   mimeType: string,
   quality: number | undefined,
-  draw: (ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) => void
+  draw: (ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) => void,
 ): Promise<Blob> {
   // Prefer OffscreenCanvas for better performance
-  if (typeof OffscreenCanvas !== 'undefined') {
+  if (typeof OffscreenCanvas !== "undefined") {
     const canvas = new OffscreenCanvas(width, height);
-    const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) throw new Error('Failed to acquire OffscreenCanvas 2D context');
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) throw new Error("Failed to acquire OffscreenCanvas 2D context");
     draw(ctx);
     return canvas.convertToBlob({ type: mimeType, quality });
   }
 
   // Fallback to DOM canvas
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Failed to acquire DOM canvas 2D context');
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to acquire DOM canvas 2D context");
   draw(ctx);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob returned null'))),
+      (blob) => (blob ? resolve(blob) : reject(new Error("Canvas toBlob returned null"))),
       mimeType,
-      quality
+      quality,
     );
   });
 }
@@ -140,7 +140,7 @@ async function wrapPngAsIco(width: number, height: number, pngBlob: Blob): Promi
 
   bytes.set(pngData, imageOffset);
 
-  return new Blob([bytes], { type: 'image/x-icon' });
+  return new Blob([bytes], { type: "image/x-icon" });
 }
 
 /**
@@ -149,7 +149,7 @@ async function wrapPngAsIco(width: number, height: number, pngBlob: Blob): Promi
 async function extractSvgDimensions(file: File): Promise<Dimensions | null> {
   try {
     const text = await file.text();
-    const match = text.match(/viewBox\s*=\s*"[\d.\-]+\s+[\d.\-]+\s+([\d.]+)\s+([\d.]+)"/i);
+    const match = text.match(/viewBox\s*=\s*"[\d.-]+\s+[\d.-]+\s+([\d.]+)\s+([\d.]+)"/i);
     if (match) {
       const width = parseFloat(match[1]);
       const height = parseFloat(match[2]);
@@ -167,7 +167,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('Failed to load image'));
+    img.onerror = () => reject(new Error("Failed to load image"));
     img.src = url;
   });
 }
@@ -175,7 +175,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 async function convertSvg(
   file: File,
   options: ImageConvertOptions,
-  outputMimeType: string
+  outputMimeType: string,
 ): Promise<Blob> {
   const url = URL.createObjectURL(file);
   try {
@@ -209,7 +209,7 @@ async function convertSvg(
 async function convertRasterImage(
   file: File,
   options: ImageConvertOptions,
-  outputMimeType: string
+  outputMimeType: string,
 ): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
   try {
@@ -223,28 +223,37 @@ async function convertRasterImage(
       sourceWidth,
       sourceHeight,
       options.maxWidth,
-      options.maxHeight
+      options.maxHeight,
     );
 
-    return await renderToBlob(output.width, output.height, outputMimeType, options.quality, (ctx) => {
-      ctx.drawImage(
-        bitmap,
-        sourceX, sourceY, sourceWidth, sourceHeight,
-        0, 0, output.width, output.height
-      );
-    });
+    return await renderToBlob(
+      output.width,
+      output.height,
+      outputMimeType,
+      options.quality,
+      (ctx) => {
+        ctx.drawImage(
+          bitmap,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          0,
+          0,
+          output.width,
+          output.height,
+        );
+      },
+    );
   } finally {
     bitmap.close();
   }
 }
 
-export async function convertImageFile(
-  file: File,
-  options: ImageConvertOptions
-): Promise<Blob> {
-  const isSvg = file.type === 'image/svg+xml';
-  const isIco = options.targetFormat === 'ico';
-  const outputMimeType = isIco ? 'image/png' : getMimeType(options.targetFormat);
+export async function convertImageFile(file: File, options: ImageConvertOptions): Promise<Blob> {
+  const isSvg = file.type === "image/svg+xml";
+  const isIco = options.targetFormat === "ico";
+  const outputMimeType = isIco ? "image/png" : getMimeType(options.targetFormat);
 
   const rasterBlob = isSvg
     ? await convertSvg(file, options, outputMimeType)

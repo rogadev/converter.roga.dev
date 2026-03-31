@@ -240,14 +240,8 @@
       return ConversionService.convertImage(selectedFile, {
         targetFormat: imageTarget,
         quality: imageQuality,
-        maxWidth:
-          targetWidth !== '' && targetHeight === ''
-            ? Number(targetWidth)
-            : undefined,
-        maxHeight:
-          targetHeight !== '' && targetWidth === ''
-            ? Number(targetHeight)
-            : undefined,
+        maxWidth: targetWidth !== '' ? Number(targetWidth) : undefined,
+        maxHeight: targetHeight !== '' ? Number(targetHeight) : undefined,
         cropRect: cropRect ?? undefined,
       })
     }
@@ -393,6 +387,7 @@
         <input
           id="file-input"
           type="file"
+          accept="image/*,video/mp4"
           aria-label="Choose files"
           class="hidden"
           onchange={handleFileInput}
@@ -598,7 +593,7 @@
     <footer class="mt-10 text-center text-xs text-neutral-500">
       Runs fully in your browser. Your files never leave your device.
       <div class="mt-3 text-neutral-400 dark:text-neutral-600">
-        &copy; 2025 Ryan Roga
+        &copy; 2026 Ryan Roga
       </div>
     </footer>
   </div>

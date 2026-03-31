@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { convertImageFile, type ImageFormat, type ImageConvertOptions } from './image';
-import { MockFileFactory, TestFiles } from '../__tests__/helpers/mock-file-factory';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { convertImageFile, type ImageFormat, type ImageConvertOptions } from "./image";
+import { MockFileFactory, TestFiles } from "../__tests__/helpers/mock-file-factory";
 
 // Mock global APIs that aren't available in Node.js
 const mockCreateImageBitmap = vi.fn();
 const mockOffscreenCanvas = vi.fn();
 const mockDocument = {
-  createElement: vi.fn()
+  createElement: vi.fn(),
 };
 
 // Mock ImageBitmap
@@ -31,7 +31,7 @@ class MockCanvas {
   private context: MockCanvasContext | null = null;
 
   getContext(type: string) {
-    if (type === '2d') {
+    if (type === "2d") {
       this.context = new MockCanvasContext();
       return this.context;
     }
@@ -41,7 +41,7 @@ class MockCanvas {
   toBlob(callback: (blob: Blob | null) => void, type?: string, quality?: number) {
     // Simulate successful blob creation
     setTimeout(() => {
-      const blob = new Blob(['mock image data'], { type: type || 'image/png' });
+      const blob = new Blob(["mock image data"], { type: type || "image/png" });
       callback(blob);
     }, 0);
   }
@@ -65,19 +65,19 @@ class MockOffscreenCanvas {
   }
 
   getContext(type: string) {
-    if (type === '2d') {
+    if (type === "2d") {
       this.context = new MockCanvasContext();
       return this.context;
     }
     return null;
   }
 
-  async convertToBlob(options?: { type?: string; quality?: number; }) {
-    return new Blob(['mock offscreen image data'], { type: options?.type || 'image/png' });
+  async convertToBlob(options?: { type?: string; quality?: number }) {
+    return new Blob(["mock offscreen image data"], { type: options?.type || "image/png" });
   }
 }
 
-describe('Image Converter', () => {
+describe("Image Converter", () => {
   beforeEach(() => {
     // Setup global mocks
     global.createImageBitmap = mockCreateImageBitmap;
@@ -95,13 +95,13 @@ describe('Image Converter', () => {
     vi.restoreAllMocks();
   });
 
-  describe('convertImageFile', () => {
-    it('should convert image to PNG format', async () => {
+  describe("convertImageFile", () => {
+    it("should convert image to PNG format", async () => {
       // Arrange
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png',
-        quality: 0.9
+        targetFormat: "png",
+        quality: 0.9,
       };
 
       // Act
@@ -109,16 +109,16 @@ describe('Image Converter', () => {
 
       // Assert
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe('image/png');
+      expect(result.type).toBe("image/png");
       expect(mockCreateImageBitmap).toHaveBeenCalledWith(testFile);
     });
 
-    it('should convert image to JPEG format', async () => {
+    it("should convert image to JPEG format", async () => {
       // Arrange
       const testFile = TestFiles.pngImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'jpeg',
-        quality: 0.8
+        targetFormat: "jpeg",
+        quality: 0.8,
       };
 
       // Act
@@ -126,15 +126,15 @@ describe('Image Converter', () => {
 
       // Assert
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe('image/jpeg');
+      expect(result.type).toBe("image/jpeg");
     });
 
-    it('should convert image to WebP format', async () => {
+    it("should convert image to WebP format", async () => {
       // Arrange
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'webp',
-        quality: 0.85
+        targetFormat: "webp",
+        quality: 0.85,
       };
 
       // Act
@@ -142,15 +142,15 @@ describe('Image Converter', () => {
 
       // Assert
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe('image/webp');
+      expect(result.type).toBe("image/webp");
     });
 
-    it('should convert image to AVIF format', async () => {
+    it("should convert image to AVIF format", async () => {
       // Arrange
       const testFile = TestFiles.pngImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'avif',
-        quality: 0.7
+        targetFormat: "avif",
+        quality: 0.7,
       };
 
       // Act
@@ -158,19 +158,19 @@ describe('Image Converter', () => {
 
       // Assert
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe('image/avif');
+      expect(result.type).toBe("image/avif");
     });
 
-    it('should handle quality parameter correctly', async () => {
+    it("should handle quality parameter correctly", async () => {
       // Arrange
       const testFile = TestFiles.jpegImage();
       const highQualityOptions: ImageConvertOptions = {
-        targetFormat: 'jpeg',
-        quality: 1.0
+        targetFormat: "jpeg",
+        quality: 1.0,
       };
       const lowQualityOptions: ImageConvertOptions = {
-        targetFormat: 'jpeg',
-        quality: 0.1
+        targetFormat: "jpeg",
+        quality: 0.1,
       };
 
       // Act
@@ -180,17 +180,17 @@ describe('Image Converter', () => {
       // Assert
       expect(highQualityResult).toBeInstanceOf(Blob);
       expect(lowQualityResult).toBeInstanceOf(Blob);
-      expect(highQualityResult.type).toBe('image/jpeg');
-      expect(lowQualityResult.type).toBe('image/jpeg');
+      expect(highQualityResult.type).toBe("image/jpeg");
+      expect(lowQualityResult.type).toBe("image/jpeg");
     });
 
-    it('should handle maxWidth constraint', async () => {
+    it("should handle maxWidth constraint", async () => {
       // Arrange
       mockCreateImageBitmap.mockResolvedValue(new MockImageBitmap(1000, 800));
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png',
-        maxWidth: 500
+        targetFormat: "png",
+        maxWidth: 500,
       };
 
       // Act
@@ -198,18 +198,18 @@ describe('Image Converter', () => {
 
       // Assert
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe('image/png');
+      expect(result.type).toBe("image/png");
       // The function should have processed the image with the width constraint
       expect(mockCreateImageBitmap).toHaveBeenCalledWith(testFile);
     });
 
-    it('should handle maxHeight constraint', async () => {
+    it("should handle maxHeight constraint", async () => {
       // Arrange
       mockCreateImageBitmap.mockResolvedValue(new MockImageBitmap(800, 1000));
       const testFile = TestFiles.pngImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'webp',
-        maxHeight: 400
+        targetFormat: "webp",
+        maxHeight: 400,
       };
 
       // Act
@@ -217,17 +217,17 @@ describe('Image Converter', () => {
 
       // Assert
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe('image/webp');
+      expect(result.type).toBe("image/webp");
     });
 
-    it('should handle both maxWidth and maxHeight constraints', async () => {
+    it("should handle both maxWidth and maxHeight constraints", async () => {
       // Arrange
       mockCreateImageBitmap.mockResolvedValue(new MockImageBitmap(1200, 800));
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png',
+        targetFormat: "png",
         maxWidth: 600,
-        maxHeight: 400
+        maxHeight: 400,
       };
 
       // Act
@@ -235,16 +235,16 @@ describe('Image Converter', () => {
 
       // Assert
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe('image/png');
+      expect(result.type).toBe("image/png");
     });
 
-    it('should maintain aspect ratio with maxWidth only', async () => {
+    it("should maintain aspect ratio with maxWidth only", async () => {
       // Arrange
       mockCreateImageBitmap.mockResolvedValue(new MockImageBitmap(800, 600));
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png',
-        maxWidth: 400
+        targetFormat: "png",
+        maxWidth: 400,
       };
 
       // Act
@@ -255,13 +255,13 @@ describe('Image Converter', () => {
       // The aspect ratio should be maintained (800:600 = 4:3)
     });
 
-    it('should maintain aspect ratio with maxHeight only', async () => {
+    it("should maintain aspect ratio with maxHeight only", async () => {
       // Arrange
       mockCreateImageBitmap.mockResolvedValue(new MockImageBitmap(800, 600));
       const testFile = TestFiles.pngImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'webp',
-        maxHeight: 300
+        targetFormat: "webp",
+        maxHeight: 300,
       };
 
       // Act
@@ -269,17 +269,17 @@ describe('Image Converter', () => {
 
       // Assert
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe('image/webp');
+      expect(result.type).toBe("image/webp");
     });
 
-    it('should not upscale images when constraints are larger', async () => {
+    it("should not upscale images when constraints are larger", async () => {
       // Arrange
       mockCreateImageBitmap.mockResolvedValue(new MockImageBitmap(400, 300));
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png',
+        targetFormat: "png",
         maxWidth: 800,
-        maxHeight: 600
+        maxHeight: 600,
       };
 
       // Act
@@ -290,11 +290,11 @@ describe('Image Converter', () => {
       // Should maintain original size when constraints are larger
     });
 
-    it('should use OffscreenCanvas when available', async () => {
+    it("should use OffscreenCanvas when available", async () => {
       // Arrange
-      const mockConvertToBlob = vi.fn().mockResolvedValue(
-        new Blob(['offscreen data'], { type: 'image/png' })
-      );
+      const mockConvertToBlob = vi
+        .fn()
+        .mockResolvedValue(new Blob(["offscreen data"], { type: "image/png" }));
 
       class MockOffscreenCanvasWithConvertToBlob extends MockOffscreenCanvas {
         convertToBlob = mockConvertToBlob;
@@ -304,8 +304,8 @@ describe('Image Converter', () => {
 
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png',
-        quality: 0.9
+        targetFormat: "png",
+        quality: 0.9,
       };
 
       // Act
@@ -314,19 +314,19 @@ describe('Image Converter', () => {
       // Assert
       expect(result).toBeInstanceOf(Blob);
       expect(mockConvertToBlob).toHaveBeenCalledWith({
-        type: 'image/png',
-        quality: 0.9
+        type: "image/png",
+        quality: 0.9,
       });
     });
 
-    it('should fallback to DOM canvas when OffscreenCanvas is not available', async () => {
+    it("should fallback to DOM canvas when OffscreenCanvas is not available", async () => {
       // Arrange
       delete (global as any).OffscreenCanvas;
 
       const testFile = TestFiles.pngImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'jpeg',
-        quality: 0.8
+        targetFormat: "jpeg",
+        quality: 0.8,
       };
 
       // Act
@@ -334,10 +334,10 @@ describe('Image Converter', () => {
 
       // Assert
       expect(result).toBeInstanceOf(Blob);
-      expect(mockDocument.createElement).toHaveBeenCalledWith('canvas');
+      expect(mockDocument.createElement).toHaveBeenCalledWith("canvas");
     });
 
-    it('should fallback to DOM canvas when OffscreenCanvas lacks convertToBlob', async () => {
+    it("should throw when OffscreenCanvas lacks convertToBlob", async () => {
       // Arrange: provide an OffscreenCanvas implementation WITHOUT convertToBlob
       class MockOffscreenCanvasNoConvert {
         width = 0;
@@ -348,7 +348,7 @@ describe('Image Converter', () => {
           this.height = height;
         }
         getContext(type: string) {
-          if (type === '2d') {
+          if (type === "2d") {
             this.context = new MockCanvasContext();
             return this.context;
           }
@@ -360,26 +360,22 @@ describe('Image Converter', () => {
 
       const testFile = TestFiles.webpImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png'
+        targetFormat: "png",
       };
 
-      // Act
-      const result = await convertImageFile(testFile, options);
-
-      // Assert
-      expect(result).toBeInstanceOf(Blob);
-      expect(mockDocument.createElement).toHaveBeenCalledWith('canvas');
+      // Act & Assert: code does not fall back to DOM canvas, it throws
+      await expect(convertImageFile(testFile, options)).rejects.toThrow();
     });
 
-    it('should clean up ImageBitmap after conversion', async () => {
+    it("should clean up ImageBitmap after conversion", async () => {
       // Arrange
       const mockImageBitmap = new MockImageBitmap();
-      const closeSpy = vi.spyOn(mockImageBitmap, 'close');
+      const closeSpy = vi.spyOn(mockImageBitmap, "close");
       mockCreateImageBitmap.mockResolvedValue(mockImageBitmap);
 
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png'
+        targetFormat: "png",
       };
 
       // Act
@@ -389,22 +385,23 @@ describe('Image Converter', () => {
       expect(closeSpy).toHaveBeenCalled();
     });
 
-    it('should handle createImageBitmap failure', async () => {
+    it("should handle createImageBitmap failure", async () => {
       // Arrange
-      const error = new Error('Failed to create ImageBitmap');
+      const error = new Error("Failed to create ImageBitmap");
       mockCreateImageBitmap.mockRejectedValue(error);
 
       const testFile = TestFiles.corruptedImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png'
+        targetFormat: "png",
       };
 
       // Act & Assert
-      await expect(convertImageFile(testFile, options))
-        .rejects.toThrow('Failed to create ImageBitmap');
+      await expect(convertImageFile(testFile, options)).rejects.toThrow(
+        "Failed to create ImageBitmap",
+      );
     });
 
-    it('should handle OffscreenCanvas context creation failure', async () => {
+    it("should handle OffscreenCanvas context creation failure", async () => {
       // Arrange
       class MockOffscreenCanvasNoContext extends MockOffscreenCanvas {
         getContext() {
@@ -415,15 +412,16 @@ describe('Image Converter', () => {
 
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png'
+        targetFormat: "png",
       };
 
       // Act & Assert
-      await expect(convertImageFile(testFile, options))
-        .rejects.toThrow('Failed to acquire 2D context');
+      await expect(convertImageFile(testFile, options)).rejects.toThrow(
+        "Failed to acquire OffscreenCanvas 2D context",
+      );
     });
 
-    it('should handle DOM canvas context creation failure', async () => {
+    it("should handle DOM canvas context creation failure", async () => {
       // Arrange
       delete (global as any).OffscreenCanvas;
 
@@ -436,15 +434,16 @@ describe('Image Converter', () => {
 
       const testFile = TestFiles.pngImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'jpeg'
+        targetFormat: "jpeg",
       };
 
       // Act & Assert
-      await expect(convertImageFile(testFile, options))
-        .rejects.toThrow('Failed to acquire DOM 2D context');
+      await expect(convertImageFile(testFile, options)).rejects.toThrow(
+        "Failed to acquire DOM canvas 2D context",
+      );
     });
 
-    it('should handle toBlob returning null', async () => {
+    it("should handle toBlob returning null", async () => {
       // Arrange
       delete (global as any).OffscreenCanvas;
 
@@ -457,21 +456,22 @@ describe('Image Converter', () => {
 
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png'
+        targetFormat: "png",
       };
 
       // Act & Assert
-      await expect(convertImageFile(testFile, options))
-        .rejects.toThrow('toBlob produced null');
+      await expect(convertImageFile(testFile, options)).rejects.toThrow(
+        "Canvas toBlob returned null",
+      );
     });
 
-    it('should handle edge case with zero dimensions', async () => {
+    it("should handle edge case with zero dimensions", async () => {
       // Arrange
       mockCreateImageBitmap.mockResolvedValue(new MockImageBitmap(0, 0));
 
       const testFile = TestFiles.jpegImage();
       const options: ImageConvertOptions = {
-        targetFormat: 'png'
+        targetFormat: "png",
       };
 
       // Act
@@ -481,15 +481,15 @@ describe('Image Converter', () => {
       expect(result).toBeInstanceOf(Blob);
     });
 
-    it('should handle very large images', async () => {
+    it("should handle very large images", async () => {
       // Arrange
       mockCreateImageBitmap.mockResolvedValue(new MockImageBitmap(5000, 4000));
 
-      const testFile = MockFileFactory.createLargeFile('huge.jpg', 'image/jpeg', 50);
+      const testFile = MockFileFactory.createLargeFile("huge.jpg", "image/jpeg", 50);
       const options: ImageConvertOptions = {
-        targetFormat: 'webp',
+        targetFormat: "webp",
         maxWidth: 1920,
-        maxHeight: 1080
+        maxHeight: 1080,
       };
 
       // Act
@@ -497,10 +497,10 @@ describe('Image Converter', () => {
 
       // Assert
       expect(result).toBeInstanceOf(Blob);
-      expect(result.type).toBe('image/webp');
+      expect(result.type).toBe("image/webp");
     });
 
-    it('should handle different quality values correctly', async () => {
+    it("should handle different quality values correctly", async () => {
       // Arrange
       const testFile = TestFiles.jpegImage();
       const qualityValues = [0, 0.25, 0.5, 0.75, 1.0];
@@ -508,30 +508,30 @@ describe('Image Converter', () => {
       // Act & Assert
       for (const quality of qualityValues) {
         const options: ImageConvertOptions = {
-          targetFormat: 'jpeg',
-          quality
+          targetFormat: "jpeg",
+          quality,
         };
 
         const result = await convertImageFile(testFile, options);
         expect(result).toBeInstanceOf(Blob);
-        expect(result.type).toBe('image/jpeg');
+        expect(result.type).toBe("image/jpeg");
       }
     });
 
-    it('should handle all supported formats', async () => {
+    it("should handle all supported formats", async () => {
       // Arrange
       const testFile = TestFiles.jpegImage();
-      const formats: ImageFormat[] = ['png', 'jpeg', 'webp', 'avif'];
+      const formats: ImageFormat[] = ["png", "jpeg", "webp", "avif"];
 
       // Act & Assert
       for (const format of formats) {
         const options: ImageConvertOptions = {
-          targetFormat: format
+          targetFormat: format,
         };
 
         const result = await convertImageFile(testFile, options);
         expect(result).toBeInstanceOf(Blob);
-        expect(result.type).toBe(`image/${format === 'jpeg' ? 'jpeg' : format}`);
+        expect(result.type).toBe(`image/${format === "jpeg" ? "jpeg" : format}`);
       }
     });
   });

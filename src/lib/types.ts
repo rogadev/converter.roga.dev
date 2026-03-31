@@ -1,4 +1,4 @@
-export type FileKind = 'image' | 'video' | 'unsupported' | null;
+export type FileKind = "image" | "video" | "unsupported" | null;
 
 export interface CropRect {
   x: number;
@@ -8,21 +8,28 @@ export interface CropRect {
 }
 
 export interface VideoSettings {
-  width: number | '';
-  fps: number | '';
-  start: number | '';
-  duration: number | '';
+  width: number | "";
+  fps: number | "";
+  start: number | "";
+  duration: number | "";
   highQuality: boolean;
 }
 
-export type ImageFormat = 'png' | 'jpeg' | 'webp' | 'avif' | 'ico';
+export type ImageFormat = "png" | "jpeg" | "webp" | "avif" | "ico";
 
-export const IMAGE_FORMATS: readonly ImageFormat[] = ['png', 'jpeg', 'webp', 'avif', 'ico'] as const;
-export const SUPPORTED_IMAGE_TYPES = [
-  'image/png',
-  'image/jpeg',
-  'image/webp',
-  'image/avif',
-  'image/svg+xml'
+export const IMAGE_FORMATS: readonly ImageFormat[] = [
+  "png",
+  "jpeg",
+  "webp",
+  "avif",
+  "ico",
 ] as const;
-export const SUPPORTED_VIDEO_TYPES = ['video/mp4'] as const;
+export const SUPPORTED_IMAGE_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/avif",
+  "image/svg+xml",
+  "image/x-icon",
+] as const;
+export const SUPPORTED_VIDEO_TYPES = ["video/mp4"] as const;

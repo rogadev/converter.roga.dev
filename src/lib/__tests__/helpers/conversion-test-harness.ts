@@ -3,9 +3,9 @@
  * Provides consistent setup, execution, and validation for conversion operations
  */
 
-import type { ImageConvertOptions } from '../../converters/image';
-import type { Mp4ToGifOptions } from '../../converters/video';
-import type { ConversionResult } from '../../conversion-service';
+import type { ImageConvertOptions } from "../../converters/image";
+import type { Mp4ToGifOptions } from "../../converters/video";
+import type { ConversionResult } from "../../conversion-service";
 
 export interface PerformanceMetrics {
   executionTime: number;
@@ -23,14 +23,15 @@ export interface ConversionTestResult {
 }
 
 export class ConversionTestHarness {
-  private static memoryMonitoringEnabled = typeof performance !== 'undefined' && 'memory' in performance;
+  private static memoryMonitoringEnabled =
+    typeof performance !== "undefined" && "memory" in performance;
 
   /**
    * Sets up and executes an image conversion with performance monitoring
    */
   static async setupImageConversion(
     file: File,
-    options: ImageConvertOptions
+    options: ImageConvertOptions,
   ): Promise<ConversionTestResult> {
     const startTime = performance.now();
     const memoryBefore = this.getMemoryUsage();
@@ -43,12 +44,12 @@ export class ConversionTestHarness {
 
     try {
       // Dynamic import to avoid loading in Node.js tests
-      const { convertImageFile } = await import('../../converters/image');
+      const { convertImageFile } = await import("../../converters/image");
       const blob = await convertImageFile(file, options);
 
       const result: ConversionResult = {
         blob,
-        filename: this.generateOutputFilename(file.name, options.targetFormat)
+        filename: this.generateOutputFilename(file.name, options.targetFormat),
       };
 
       const endTime = performance.now();
@@ -62,8 +63,8 @@ export class ConversionTestHarness {
           memoryBefore,
           memoryAfter,
           memoryPeak,
-          memoryDelta: memoryAfter - memoryBefore
-        }
+          memoryDelta: memoryAfter - memoryBefore,
+        },
       };
     } catch (error) {
       const endTime = performance.now();
@@ -77,8 +78,8 @@ export class ConversionTestHarness {
           memoryBefore,
           memoryAfter,
           memoryPeak,
-          memoryDelta: memoryAfter - memoryBefore
-        }
+          memoryDelta: memoryAfter - memoryBefore,
+        },
       };
     } finally {
       this.stopMemoryMonitoring(memoryMonitor);
@@ -90,7 +91,7 @@ export class ConversionTestHarness {
    */
   static async setupVideoConversion(
     file: File,
-    options: Mp4ToGifOptions = {}
+    options: Mp4ToGifOptions = {},
   ): Promise<ConversionTestResult> {
     const startTime = performance.now();
     const memoryBefore = this.getMemoryUsage();
@@ -102,12 +103,12 @@ export class ConversionTestHarness {
 
     try {
       // Dynamic import to avoid loading FFmpeg in Node.js tests
-      const { convertMp4ToGif } = await import('../../converters/video');
+      const { convertMp4ToGif } = await import("../../converters/video");
       const blob = await convertMp4ToGif(file, options);
 
       const result: ConversionResult = {
         blob,
-        filename: this.generateOutputFilename(file.name, 'gif')
+        filename: this.generateOutputFilename(file.name, "gif"),
       };
 
       const endTime = performance.now();
@@ -121,8 +122,8 @@ export class ConversionTestHarness {
           memoryBefore,
           memoryAfter,
           memoryPeak,
-          memoryDelta: memoryAfter - memoryBefore
-        }
+          memoryDelta: memoryAfter - memoryBefore,
+        },
       };
     } catch (error) {
       const endTime = performance.now();
@@ -136,8 +137,8 @@ export class ConversionTestHarness {
           memoryBefore,
           memoryAfter,
           memoryPeak,
-          memoryDelta: memoryAfter - memoryBefore
-        }
+          memoryDelta: memoryAfter - memoryBefore,
+        },
       };
     } finally {
       this.stopMemoryMonitoring(memoryMonitor);
@@ -151,7 +152,7 @@ export class ConversionTestHarness {
     result: ConversionResult,
     expectedType: string,
     expectedMinSize = 0,
-    expectedMaxSize = Infinity
+    expectedMaxSize = Infinity,
   ): {
     valid: boolean;
     errors: string[];
@@ -173,18 +174,20 @@ export class ConversionTestHarness {
 
     // Validate filename
     if (!result.filename || result.filename.length === 0) {
-      errors.push('Filename is empty or undefined');
+      errors.push("Filename is empty or undefined");
     }
 
     // Validate filename extension matches expected type
     const expectedExtension = this.getExtensionFromMimeType(expectedType);
     if (expectedExtension && !result.filename.endsWith(`.${expectedExtension}`)) {
-      errors.push(`Filename ${result.filename} doesn't end with expected extension .${expectedExtension}`);
+      errors.push(
+        `Filename ${result.filename} doesn't end with expected extension .${expectedExtension}`,
+      );
     }
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -193,8 +196,8 @@ export class ConversionTestHarness {
    */
   static async measurePerformance<T>(
     operation: () => Promise<T>,
-    label = 'Operation'
-  ): Promise<{ result: T; metrics: PerformanceMetrics; }> {
+    label = "Operation",
+  ): Promise<{ result: T; metrics: PerformanceMetrics }> {
     const startTime = performance.now();
     const memoryBefore = this.getMemoryUsage();
     let memoryPeak = memoryBefore;
@@ -209,7 +212,9 @@ export class ConversionTestHarness {
       const memoryAfter = this.getMemoryUsage();
 
       console.log(`${label} completed in ${(endTime - startTime).toFixed(2)}ms`);
-      console.log(`Memory: ${memoryBefore.toFixed(2)}MB -> ${memoryAfter.toFixed(2)}MB (peak: ${memoryPeak.toFixed(2)}MB)`);
+      console.log(
+        `Memory: ${memoryBefore.toFixed(2)}MB -> ${memoryAfter.toFixed(2)}MB (peak: ${memoryPeak.toFixed(2)}MB)`,
+      );
 
       return {
         result,
@@ -218,8 +223,8 @@ export class ConversionTestHarness {
           memoryBefore,
           memoryAfter,
           memoryPeak,
-          memoryDelta: memoryAfter - memoryBefore
-        }
+          memoryDelta: memoryAfter - memoryBefore,
+        },
       };
     } finally {
       this.stopMemoryMonitoring(memoryMonitor);
@@ -253,25 +258,29 @@ export class ConversionTestHarness {
    * Gets current memory usage (browser only)
    */
   private static getMemoryUsage(): number {
-    if (this.memoryMonitoringEnabled && 'memory' in performance) {
+    if (this.memoryMonitoringEnabled && "memory" in performance) {
       try {
-        const memory = (performance as any).memory as {
-          usedJSHeapSize?: number;
-          totalJSHeapSize?: number;
-          jsHeapSizeLimit?: number;
-        } | undefined;
+        const memory = (performance as any).memory as
+          | {
+              usedJSHeapSize?: number;
+              totalJSHeapSize?: number;
+              jsHeapSizeLimit?: number;
+            }
+          | undefined;
         const usedMB = (memory?.usedJSHeapSize || 0) / (1024 * 1024);
         const totalMB = (memory?.totalJSHeapSize || 0) / (1024 * 1024);
         const limitMB = (memory?.jsHeapSizeLimit || 0) / (1024 * 1024);
 
         // Log warning if memory usage is high
         if (usedMB > limitMB * 0.8) {
-          console.warn(`High memory usage detected: ${usedMB.toFixed(2)}MB / ${limitMB.toFixed(2)}MB`);
+          console.warn(
+            `High memory usage detected: ${usedMB.toFixed(2)}MB / ${limitMB.toFixed(2)}MB`,
+          );
         }
 
         return usedMB;
       } catch (error) {
-        console.warn('Failed to get memory usage:', error);
+        console.warn("Failed to get memory usage:", error);
         return 0;
       }
     }
@@ -288,23 +297,26 @@ export class ConversionTestHarness {
     const warnings: string[] = [];
 
     // Check for memory leaks (significant increase without cleanup)
-    if (metrics.memoryDelta > 50) { // 50MB increase
+    if (metrics.memoryDelta > 50) {
+      // 50MB increase
       warnings.push(`Potential memory leak detected: ${metrics.memoryDelta.toFixed(2)}MB increase`);
     }
 
     // Check for excessive peak usage
-    if (metrics.memoryPeak > 500) { // 500MB peak
+    if (metrics.memoryPeak > 500) {
+      // 500MB peak
       warnings.push(`High peak memory usage: ${metrics.memoryPeak.toFixed(2)}MB`);
     }
 
     // Check for slow execution (might indicate memory pressure)
-    if (metrics.executionTime > 30000) { // 30 seconds
+    if (metrics.executionTime > 30000) {
+      // 30 seconds
       warnings.push(`Slow execution time: ${metrics.executionTime.toFixed(2)}ms`);
     }
 
     return {
       acceptable: warnings.length === 0,
-      warnings
+      warnings,
     };
   }
 
@@ -332,7 +344,7 @@ export class ConversionTestHarness {
    * Generates output filename based on input and target format
    */
   private static generateOutputFilename(inputName: string, targetFormat: string): string {
-    const baseName = inputName.replace(/\.[^/.]+$/, '');
+    const baseName = inputName.replace(/\.[^/.]+$/, "");
     return `${baseName}.${targetFormat}`;
   }
 
@@ -341,11 +353,11 @@ export class ConversionTestHarness {
    */
   private static getExtensionFromMimeType(mimeType: string): string | null {
     const mimeToExt: Record<string, string> = {
-      'image/jpeg': 'jpg',
-      'image/png': 'png',
-      'image/webp': 'webp',
-      'image/avif': 'avif',
-      'image/gif': 'gif'
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/avif": "avif",
+      "image/gif": "gif",
     };
 
     return mimeToExt[mimeType] || null;
@@ -359,7 +371,7 @@ export const TestHarness = {
   /**
    * Quick image conversion test
    */
-  convertImage: (file: File, targetFormat: 'png' | 'jpeg' | 'webp' | 'avif', quality = 0.9) =>
+  convertImage: (file: File, targetFormat: "png" | "jpeg" | "webp" | "avif", quality = 0.9) =>
     ConversionTestHarness.setupImageConversion(file, { targetFormat, quality }),
 
   /**
@@ -378,5 +390,5 @@ export const TestHarness = {
    * Validate conversion result
    */
   validate: (result: ConversionResult, expectedType: string) =>
-    ConversionTestHarness.validateOutput(result, expectedType)
+    ConversionTestHarness.validateOutput(result, expectedType),
 };

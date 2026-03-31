@@ -1,8 +1,8 @@
 /**
  * Base test suite class providing consistent setup patterns
  */
-import { beforeEach, afterEach } from 'vitest';
-import { TestMocks, type MockSetupOptions } from './test-mocks';
+import { beforeEach, afterEach } from "vitest";
+import { TestMocks, type MockSetupOptions } from "./test-mocks";
 
 export abstract class BaseTestSuite {
   protected mockConversionService: any;
@@ -40,10 +40,10 @@ export abstract class BaseTestSuite {
   }
 
   // Override in subclasses for custom setup
-  protected async customSetup(): Promise<void> { }
+  protected async customSetup(): Promise<void> {}
 
   // Override in subclasses for custom cleanup
-  protected customCleanup(): void { }
+  protected customCleanup(): void {}
 }
 
 /**
@@ -54,7 +54,7 @@ export abstract class ComponentTestSuite extends BaseTestSuite {
     super({
       includeWebUtils: true,
       includeConversionService: true,
-      includeURLMocks: true
+      includeURLMocks: true,
     });
   }
 
@@ -69,10 +69,12 @@ export abstract class ComponentTestSuite extends BaseTestSuite {
  */
 export abstract class UnitTestSuite extends BaseTestSuite {
   constructor(mockOptions?: MockSetupOptions) {
-    super(mockOptions || {
-      includeWebUtils: false,
-      includeConversionService: false,
-      includeURLMocks: false
-    });
+    super(
+      mockOptions || {
+        includeWebUtils: false,
+        includeConversionService: false,
+        includeURLMocks: false,
+      },
+    );
   }
 }

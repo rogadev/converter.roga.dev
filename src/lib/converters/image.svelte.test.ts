@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { page } from '@vitest/browser/context';
-import { convertImageFile, type ImageFormat } from './image';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { page } from "@vitest/browser/context";
+import { convertImageFile, type ImageFormat } from "./image";
 
 function createTestFile(name: string, type: string, size = 10): File {
   return new File([new Uint8Array(size)], name, { type });
@@ -16,22 +16,22 @@ class FakeOffscreenCanvas {
   getContext() {
     return { drawImage: vi.fn() };
   }
-  convertToBlob(opts: { type: string; quality?: number; }) {
+  convertToBlob(opts: { type: string; quality?: number }) {
     return Promise.resolve(new Blob([new Uint8Array([1, 2, 3])], { type: opts.type }));
   }
 }
 
 // Factory function to create a mock with call tracking
-function createMockOffscreenCanvasWithTracking(calls: Array<{ type: string; quality?: number; }>) {
+function createMockOffscreenCanvasWithTracking(calls: Array<{ type: string; quality?: number }>) {
   return class extends FakeOffscreenCanvas {
-    convertToBlob(opts: { type: string; quality?: number; }) {
+    convertToBlob(opts: { type: string; quality?: number }) {
       calls.push({ type: opts.type, quality: opts.quality });
       return Promise.resolve(new Blob([new Uint8Array([1, 2, 3])], { type: opts.type }));
     }
   };
 }
 
-describe('convertImageFile (browser)', () => {
+describe("convertImageFile (browser)", () => {
   const originalCreateImageBitmap = globalThis.createImageBitmap;
   const originalOffscreenCanvas = (globalThis as any).OffscreenCanvas;
 
@@ -42,7 +42,7 @@ describe('convertImageFile (browser)', () => {
       return {
         width: 2000,
         height: 1000,
-        close: vi.fn() // Mock the close method
+        close: vi.fn(), // Mock the close method
       } as any;
     }) as any;
   });
@@ -53,19 +53,23 @@ describe('convertImageFile (browser)', () => {
     vi.restoreAllMocks();
   });
 
-  it('respects maxWidth only and keeps aspect ratio using OffscreenCanvas', async () => {
-    const calls: Array<{ type: string; quality?: number; }> = [];
+  it("respects maxWidth only and keeps aspect ratio using OffscreenCanvas", async () => {
+    const calls: Array<{ type: string; quality?: number }> = [];
     (globalThis as any).OffscreenCanvas = createMockOffscreenCanvasWithTracking(calls);
 
-    const file = createTestFile('photo.jpg', 'image/jpeg');
-    const out = await convertImageFile(file, { targetFormat: 'webp', maxWidth: 1000, quality: 0.5 });
+    const file = createTestFile("photo.jpg", "image/jpeg");
+    const out = await convertImageFile(file, {
+      targetFormat: "webp",
+      maxWidth: 1000,
+      quality: 0.5,
+    });
 
-    expect(out.type).toBe('image/webp');
+    expect(out.type).toBe("image/webp");
     expect(calls).toHaveLength(1);
-    expect(calls[0]).toEqual({ type: 'image/webp', quality: 0.5 });
+    expect(calls[0]).toEqual({ type: "image/webp", quality: 0.5 });
   });
 
-  it('falls back to DOM canvas when OffscreenCanvas is not available', async () => {
+  it("falls back to DOM canvas when OffscreenCanvas is not available", async () => {
     (globalThis as any).OffscreenCanvas = undefined;
 
     // Mock DOM canvas and toBlob
@@ -73,21 +77,19 @@ describe('convertImageFile (browser)', () => {
       cb(new Blob([new Uint8Array([4, 5, 6])], { type }));
     });
     const getContextMock = vi.fn(() => ({ drawImage: vi.fn() }));
-    const createElementSpy = vi.spyOn(document, 'createElement');
+    const createElementSpy = vi.spyOn(document, "createElement");
     createElementSpy.mockImplementation((tag: string): any => {
-      if (tag === 'canvas') {
+      if (tag === "canvas") {
         return { width: 0, height: 0, getContext: getContextMock, toBlob: toBlobMock };
       }
       return document.createElement(tag);
     });
 
-    const file = createTestFile('pic.png', 'image/png');
-    const out = await convertImageFile(file, { targetFormat: 'jpeg', maxHeight: 500 });
+    const file = createTestFile("pic.png", "image/png");
+    const out = await convertImageFile(file, { targetFormat: "jpeg", maxHeight: 500 });
 
-    expect(out.type).toBe('image/jpeg');
+    expect(out.type).toBe("image/jpeg");
     expect(getContextMock).toHaveBeenCalled();
     expect(toBlobMock).toHaveBeenCalled();
   });
 });
-
-

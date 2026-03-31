@@ -9,8 +9,8 @@ export interface Mp4ToGifOptions {
 // Lazy dynamic import to keep initial bundle small
 async function loadFfmpeg() {
   const [{ FFmpeg }, { fetchFile }] = await Promise.all([
-    import('@ffmpeg/ffmpeg'),
-    import('@ffmpeg/util')
+    import("@ffmpeg/ffmpeg"),
+    import("@ffmpeg/util"),
   ]);
 
   const ffmpeg = new FFmpeg();
@@ -18,68 +18,55 @@ async function loadFfmpeg() {
 }
 
 export async function convertMp4ToGif(file: File, options: Mp4ToGifOptions = {}): Promise<Blob> {
+  const { ffmpeg, fetchFile } = await loadFfmpeg();
+
   try {
-    console.log('Starting MP4 to GIF conversion...');
-    const { ffmpeg, fetchFile } = await loadFfmpeg();
-    console.log('FFmpeg loaded, starting core load...');
-
     await ffmpeg.load();
-    console.log('FFmpeg core loaded successfully');
 
-    const inputName = 'input.mp4';
-    const outputName = 'output.gif';
-    const paletteName = 'palette.png';
+    const inputName = "input.mp4";
+    const outputName = "output.gif";
+    const paletteName = "palette.png";
 
     await ffmpeg.writeFile(inputName, await fetchFile(file));
-    console.log('Input file written to FFmpeg filesystem');
 
-    const args: string[] = ['-i', inputName];
+    const args: string[] = ["-i", inputName];
     if (options.start != null) {
-      args.unshift('-ss', String(options.start));
+      args.unshift("-ss", String(options.start));
     }
     if (options.duration != null) {
-      args.push('-t', String(options.duration));
+      args.push("-t", String(options.duration));
     }
     const fps = options.fps ?? 12;
     const width = options.width;
 
-    const scaleFilter = width != null ? `scale=${width}:-1:flags=lanczos` : 'scale=iw:ih:flags=lanczos';
+    const scaleFilter =
+      width != null ? `scale=${width}:-1:flags=lanczos` : "scale=iw:ih:flags=lanczos";
     const fpsFilter = `fps=${fps}`;
     const filter = `${fpsFilter},${scaleFilter}`;
 
     if (options.highQuality) {
-      // palette generation improves quality
-      console.log('Starting high-quality conversion with palette generation...');
       // First pass: generate palette, honoring seek/duration if provided
       await ffmpeg.exec([
         ...args,
-        '-vf',
+        "-vf",
         `${filter},palettegen=stats_mode=full`,
-        '-y',
-        paletteName
+        "-y",
+        paletteName,
       ]);
       // Second pass: use palette for higher quality, also honoring seek/duration
       await ffmpeg.exec([
         ...args,
-        '-i',
+        "-i",
         paletteName,
-        '-lavfi',
+        "-lavfi",
         `${filter}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3`,
-        '-y',
-        outputName
+        "-y",
+        outputName,
       ]);
     } else {
-      console.log('Starting standard quality conversion...');
-      await ffmpeg.exec([
-        ...args,
-        '-vf',
-        filter,
-        '-y',
-        outputName
-      ]);
+      await ffmpeg.exec([...args, "-vf", filter, "-y", outputName]);
     }
 
-    console.log('Conversion completed, reading output file...');
     const data = await ffmpeg.readFile(outputName);
 
     // Clean up files
@@ -93,14 +80,18 @@ export async function convertMp4ToGif(file: File, options: Mp4ToGifOptions = {})
     }
     await ffmpeg.deleteFile(outputName);
 
-    console.log('Conversion successful, returning blob...');
-    // Convert FileData to BlobPart - data should be Uint8Array for binary files
-    // @ts-expect-error FileData type is compatible with Uint8Array at runtime
-    return new Blob([data], { type: 'image/gif' });
+    if (!(data instanceof Uint8Array)) {
+      throw new Error("Expected binary data from FFmpeg");
+    }
+    const bytes = new ArrayBuffer(data.byteLength);
+    new Uint8Array(bytes).set(data);
+    return new Blob([bytes], { type: "image/gif" });
   } catch (error) {
-    console.error('Error during MP4 to GIF conversion:', error);
-    throw new Error(`Failed to convert MP4 to GIF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to convert MP4 to GIF: ${error instanceof Error ? error.message : "Unknown error"}`,
+      { cause: error },
+    );
+  } finally {
+    ffmpeg.terminate();
   }
 }
-
-
