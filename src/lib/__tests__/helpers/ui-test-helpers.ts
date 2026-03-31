@@ -211,7 +211,9 @@ export class UITestHelpers {
    * Clicks the conversion button
    */
   static async triggerConversion(): Promise<void> {
-    const convertButton = document.querySelector("button") as HTMLButtonElement;
+    const convertButton = document.querySelector(
+      'button[aria-label="Start file conversion"]',
+    ) as HTMLButtonElement;
     if (!convertButton) {
       throw new Error("Convert button not found");
     }
@@ -232,7 +234,9 @@ export class UITestHelpers {
     let lastButtonText = "";
 
     while (Date.now() - startTime < timeout) {
-      const convertButton = document.querySelector("button") as HTMLButtonElement;
+      const convertButton = (document.querySelector(
+        'button[aria-label="Start file conversion"], button[aria-label="Converting file, please wait"]',
+      ) ?? document.querySelector("button")) as HTMLButtonElement;
 
       if (!convertButton) {
         throw new Error("Convert button not found during wait");
