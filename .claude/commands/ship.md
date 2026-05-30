@@ -36,7 +36,7 @@ If `pnpm fix` modifies files, that's fine — those fixes become part of the com
 
 1. `git status` — review all changes one final time.
 2. Stage files by name. Do NOT use `git add -A` or `git add .`.
-3. Do NOT stage generated/ephemeral paths: `coverage/`, `.svelte-kit/`, `node_modules/`, `build/`, `.beads/`.
+3. Do NOT stage generated/ephemeral paths: `coverage/`, `.svelte-kit/`, `node_modules/`, `build/`.
 4. Create **one clean commit** that represents the entire unit of work.
 5. Use a high-quality commit message:
 
@@ -50,19 +50,9 @@ If `pnpm fix` modifies files, that's fine — those fixes become part of the com
 
    **Always reference the GitHub issue** in the commit body (e.g., `Closes #57` or `Part of #57`).
 
-## Step 4: Close bd tasks
-
-Close all bd tasks that were completed during this work session:
-
-```bash
-bd list --status=in_progress
-bd list --status=open
-bd close <id1> <id2> ...
-```
-
 The GitHub issue is **not closed here** — the human closes it after reviewing and merging, or it auto-closes via the commit message (`Closes #N`).
 
-## Step 5: Push
+## Step 4: Push
 
 ```bash
 git push
@@ -82,14 +72,13 @@ git pull --rebase
 
 Then re-run `pnpm fix` to confirm the rebase didn't break anything. If clean, push again.
 
-## Step 6: Confirm
+## Step 5: Confirm
 
 Report:
 
 - Commit pushed (hash and message)
 - Branch and remote
 - GH issue number referenced in the commit
-- bd tasks closed
 
 Spawn the **impact** agent to report diff stats and pre-AI dev time estimate.
 

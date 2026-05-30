@@ -14,7 +14,7 @@ If a plan was produced by `/next` in this session, use it. If not, ask the user 
 
 Read the plan carefully. Understand:
 
-- What issue is being worked on (beads ID, GH number)
+- What issue is being worked on (GH number)
 - The acceptance criteria
 - The implementation steps in order
 - The testing strategy
@@ -36,7 +36,7 @@ Work through the plan step by step. For each step:
 ### Ground rules
 
 - **Stay focused.** Only implement what's in the plan. No scope creep, no drive-by refactors.
-- **Discover, don't fix.** If you find bugs or issues outside the plan's scope, create bd tasks (`bd create --title="..." --type=bug --priority=2 --deps discovered-from:<current-task-id>`) — do not silently fix them.
+- **Discover, don't fix.** If you find bugs or issues outside the plan's scope, note them for follow-up (e.g. a new GitHub issue) — do not silently fix them.
 - **Follow existing patterns.** The plan references pattern files — match the style, naming, and conventions already in the codebase.
 - **Clean as you go.** After each step, remove unused imports and dead code introduced by your changes.
 
@@ -93,7 +93,7 @@ Summarize:
 - What was implemented
 - What tests were added/modified
 - Files changed
-- Any new beads issues created for discovered work
+- Any issues discovered outside the plan's scope
 
 ### 🚨 MANDATORY: Impact footer
 

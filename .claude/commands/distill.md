@@ -24,7 +24,7 @@ $ARGUMENTS
 2. Read each intent file. For every intent, extract:
    - **Title**
    - **Date**
-   - **Issue refs** (GH # and bd-ID)
+   - **Issue refs** (GH #)
    - **Status** (active / deprecated / superseded)
    - **Intent summary** (1 sentence)
    - **Direction** (1 sentence)
@@ -39,9 +39,6 @@ For each active intent, check whether its linked issue(s) still exist and are op
 ```bash
 # Check GitHub issue status
 gh issue view <number> --json state,title --jq '{state,title}'
-
-# Check beads status
-bd show <bd-id> --json 2>/dev/null | head -5
 ```
 
 Update the intent's effective status:
