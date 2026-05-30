@@ -2,7 +2,7 @@
 description: "Planning agent: select the next issue, gather context, and produce a detailed implementation plan for /go"
 ---
 
-You are a **planning agent**. Your job is to identify the next logical issue to work on, gather all required context from the codebase, decompose the work into bd tasks, and produce a detailed implementation plan. You do NOT write code.
+You are a **planning agent**. Your job is to identify the next logical issue to work on, gather all required context from the codebase, and produce a detailed implementation plan. You do NOT write code.
 
 > **Pipeline:** `/next` (plan) → `/go` (build) → `/deep-review` (review) → `/ship` (push)
 
@@ -11,17 +11,6 @@ You are a **planning agent**. Your job is to identify the next logical issue to 
 ## Step 1: Identify the next issue
 
 Survey the landscape to find the highest-impact unblocked issue.
-
-### 1a. Check for in-progress agent work
-
-```bash
-bd list --status=in_progress      # Anything already claimed but stalled?
-bd list --status=open             # Existing decomposed tasks from a prior session?
-```
-
-If there are open/in-progress bd tasks from a prior session, consider resuming that work before starting something new.
-
-### 1b. Check GitHub for available work
 
 ```bash
 gh issue list --state open --limit 20 --json number,title,labels,milestone,updatedAt
@@ -68,34 +57,7 @@ Read the affected files and their tests. Identify:
 - Are there shared types, stores, or components that downstream code relies on?
 - Will this require changes to multiple files that must stay in sync?
 
-## Step 3: Decompose into bd tasks
-
-Break the GitHub issue into concrete, fine-grained bd tasks. Each task should represent one logical unit of work that can be completed and verified independently.
-
-**Guidelines:**
-
-- Each task title should be specific and actionable (e.g., "Add `analyzeSnapshot` utility function" not "Implement backend")
-- Reference the GH issue number in the first task's notes field
-- Set up dependencies between tasks that must happen in order
-- Use `discovered-from` links for work found during investigation
-
-```bash
-# Create tasks for the implementation steps
-bd create --title="<specific step 1>" --type=task --priority=2 --description="<what and why>"
-bd create --title="<specific step 2>" --type=task --priority=2 --description="<what and why>"
-bd create --title="<write tests for X>" --type=task --priority=2 --description="<what to test>"
-
-# Reference the GH issue in the parent task
-echo 'GH #<number> — <title>' | bd update <first-task-id> --notes=-
-
-# Set up dependencies (tests depend on implementation, etc.)
-bd dep add <test-task-id> <impl-task-id>
-
-# Claim the first task
-bd update <first-task-id> --claim
-```
-
-## Step 4: Build the plan
+## Step 3: Build the plan
 
 Produce a structured implementation plan with enough detail that the `/go` builder agent can execute without asking follow-up questions.
 
@@ -108,7 +70,6 @@ Present the plan in this format:
 
 ## Issue
 **GitHub:** #<number> — <title>
-**bd tasks:** <list of created task IDs>
 
 ## Summary
 [One paragraph: what needs to happen and why]
@@ -120,12 +81,12 @@ Present the plan in this format:
 
 ## Implementation Steps
 
-### 1. [Step title] (bd: <task-id>)
+### 1. [Step title]
 **Files:** `path/to/file.ts`
 **What:** [Specific description of the change]
 **Pattern reference:** [Link to existing code that demonstrates the pattern to follow]
 
-### 2. [Step title] (bd: <task-id>)
+### 2. [Step title]
 ...
 
 ## Testing Strategy

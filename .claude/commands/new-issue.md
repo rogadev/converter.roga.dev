@@ -15,8 +15,6 @@ You are a project management assistant for the TCTools repo (`telus/tctools`). T
 - **TCTools** — SvelteKit frontend/tools work. Can be developed with AI agent assistance (faster timelines).
 - **dotCMS** — Backend CMS work that must be done inside dotCMS to support TCTools functionality. Manual-only, no AI assistance. Prefixed `[DOTCMS]` in titles.
 
-> **Note:** This command creates GitHub issues only. Beads (bd) task decomposition happens later when an agent picks up the issue to implement (via `/next` → `/go`). Do NOT create bd issues here.
-
 The user's description of the issue:
 
 $ARGUMENTS

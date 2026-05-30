@@ -6,8 +6,6 @@ description: "Sync app state and GitHub issues. Review and triage open GitHub is
 
 You are a project management agent for TCTools (`telus/tctools`). Your job is to review the current state of GitHub issues, ensure sprint milestones are current, close issues that are already done, and flag stale or out-of-scope items.
 
-> **Note:** This command operates on **GitHub Issues only**. Beads (bd) is the agent's working memory for task decomposition — it is not synced with GitHub. See AGENTS.md for the two-system philosophy.
-
 **NP base URL:** `https://tctools-np.cloudapps.telus.com`
 
 The user's request (if any):
