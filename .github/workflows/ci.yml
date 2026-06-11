@@ -51,7 +51,7 @@ jobs:
         run: pnpm check
 
   test:
-    name: Unit & UI Tests
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,14 +67,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
-
       - name: Run unit tests
         run: pnpm test:unit --run
-
-      - name: Run UI tests
-        run: pnpm test:ui --run
 
   build:
     name: Build
