@@ -13,6 +13,11 @@ pnpm dev              # Start dev server
 pnpm build            # Production build
 pnpm check            # Type-check with svelte-check
 
+pnpm lint             # Lint with oxlint (NOT eslint)
+pnpm lint:fix         # Lint and auto-fix
+pnpm fmt              # Format with oxfmt (NOT prettier)
+pnpm fmt:check        # Check formatting without writing
+
 pnpm test             # Run all tests (unit + UI + e2e)
 pnpm test:unit        # Server-side unit tests (Node, vitest)
 pnpm test:ui          # Client/browser tests (Playwright browser, vitest)
@@ -39,6 +44,11 @@ Converters:
     ↓ returns
 Blob → download or preview
 ```
+
+Supporting modules:
+
+- `file-utils.ts` → input classification (`detectFileKind`), default target format selection (prefers modern formats, avoids no-op conversions), format labels/validation
+- `error-handler.ts` → `ConversionError` class and `handleConversionError`, which maps raw FFmpeg failures (SharedArrayBuffer, out-of-memory) to user-facing messages
 
 **Key design decisions:**
 
