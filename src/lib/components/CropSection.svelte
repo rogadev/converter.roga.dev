@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { CropRect } from '$lib/types'
+  import type { CropRect } from '#lib/types'
 
   interface Props {
     cropRect: CropRect | null

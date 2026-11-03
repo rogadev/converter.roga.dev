@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { CropRect } from '$lib/types'
+  import type { CropRect } from '#lib/types'
 
   type DragMode = 'move' | 'nw' | 'ne' | 'sw' | 'se'
 

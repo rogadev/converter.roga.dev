@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { downloadBlob, humanFileSize, renameFile } from '$lib/converters/web'
-  import { ConversionService } from '$lib/conversion-service'
-  import { detectFileKind, getDefaultImageTarget } from '$lib/file-utils'
-  import { handleConversionError } from '$lib/error-handler'
-  import type { FileKind, ImageFormat, CropRect } from '$lib/types'
-  import ImageCropper from '$lib/components/ImageCropper.svelte'
-  import ImagePreview from '$lib/components/ImagePreview.svelte'
-  import FormatSelector from '$lib/components/FormatSelector.svelte'
-  import ResizeOptions from '$lib/components/ResizeOptions.svelte'
-  import AspectRatioSelector from '$lib/components/AspectRatioSelector.svelte'
-  import CropSection from '$lib/components/CropSection.svelte'
-  import QualityOutput from '$lib/components/QualityOutput.svelte'
+  import { downloadBlob, humanFileSize, renameFile } from '#lib/converters/web'
+  import { ConversionService } from '#lib/conversion-service'
+  import { detectFileKind, getDefaultImageTarget } from '#lib/file-utils'
+  import { handleConversionError } from '#lib/error-handler'
+  import type { FileKind, ImageFormat, CropRect } from '#lib/types'
+  import ImageCropper from '#lib/components/ImageCropper.svelte'
+  import ImagePreview from '#lib/components/ImagePreview.svelte'
+  import FormatSelector from '#lib/components/FormatSelector.svelte'
+  import ResizeOptions from '#lib/components/ResizeOptions.svelte'
+  import AspectRatioSelector from '#lib/components/AspectRatioSelector.svelte'
+  import CropSection from '#lib/components/CropSection.svelte'
+  import QualityOutput from '#lib/components/QualityOutput.svelte'
 
   const DEFAULT_IMAGE_QUALITY = 1.0
   const DEFAULT_GIF_WIDTH = 480

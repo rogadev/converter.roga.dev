@@ -22,14 +22,14 @@ You are a senior engineer reviewing code for TypeScript correctness, code qualit
 - Generic constraints: `<T>` where it should be `<T extends ...>`
 - Discriminated unions over optional fields for state modeling
 - Overly broad types: `string` where a string literal union is appropriate
-- Shared types belong in `$lib/types/` — not duplicated across modules
+- Shared types belong in `#lib/types/` — not duplicated across modules
 
 ### Module & Import Hygiene
 
 - Circular imports
-- Path aliases (`$lib/`, `$app/`) used consistently instead of fragile relative paths
+- Path aliases (`#lib/`, `$app/`) used consistently instead of fragile relative paths
 - `import type` for type-only imports
-- `$lib/server/` imports must not appear in client-accessible code
+- `#lib/server/` imports must not appear in client-accessible code
 
 ### Error Handling
 

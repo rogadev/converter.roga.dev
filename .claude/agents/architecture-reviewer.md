@@ -17,14 +17,14 @@ You are a senior engineer specializing in SvelteKit 2 and Svelte 5 architecture.
 
 - Correct file conventions: `+page.svelte`, `+layout.svelte`, `+error.svelte`, `+page.ts`/`+page.server.ts`, `+layout.ts`/`+layout.server.ts`, `+server.ts`
 - Route groups `(group)`, dynamic segments `[slug]`, rest params `[...rest]`, optional params `[[optional]]`
-- Server-only code stays in `+page.server.ts`, `+server.ts`, or `$lib/server/` — never in universal load functions or client components
+- Server-only code stays in `+page.server.ts`, `+server.ts`, or `#lib/server/` — never in universal load functions or client components
 - `+server.ts` endpoints return proper `Response` objects with correct status codes and headers
 - No accidental route conflicts or shadowing
 
 ### Data Loading
 
 - **Server load functions** (`+page.server.ts`, `+layout.server.ts`): can access secrets and databases, but returned data is serialized to the client — verify no secrets leak
-- **Universal load functions** (`+page.ts`, `+layout.ts`): run on both server and client — must not import from `$lib/server/`
+- **Universal load functions** (`+page.ts`, `+layout.ts`): run on both server and client — must not import from `#lib/server/`
 - Sequential `await`s on independent fetches should be `Promise.all` (waterfalls)
 - Errors handled with `error()` from `@sveltejs/kit` for expected failures
 - `depends()` used appropriately for invalidation
