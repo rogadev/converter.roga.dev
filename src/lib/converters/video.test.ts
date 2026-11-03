@@ -16,7 +16,9 @@ const mockFetchFile = vi.fn();
 
 // Mock the dynamic imports
 vi.mock("@ffmpeg/ffmpeg", () => ({
-  FFmpeg: vi.fn(() => mockFFmpeg),
+  FFmpeg: vi.fn(function () {
+    return mockFFmpeg;
+  }),
 }));
 
 vi.mock("@ffmpeg/util", () => ({
