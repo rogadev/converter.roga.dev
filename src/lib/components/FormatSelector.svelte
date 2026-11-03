@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { type ImageFormat, IMAGE_FORMATS } from '$lib/types'
-  import { formatImageLabel } from '$lib/file-utils'
+  import { type ImageFormat, IMAGE_FORMATS } from '#lib/types'
+  import { formatImageLabel } from '#lib/file-utils'
 
   interface Props {
     selected: ImageFormat

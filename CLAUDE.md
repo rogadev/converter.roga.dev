@@ -79,4 +79,4 @@ This project uses Svelte 5 runes exclusively (`$state`, `$derived`, `$props`, `$
 
 ## Deployment
 
-Adapter-based: `adapter-vercel` in production, `adapter-auto` in development (configured in svelte.config.js).
+Adapter-based: `adapter-vercel` in production, `adapter-auto` in development (configured in vite.config.ts via the `sveltekit()` plugin; SvelteKit 3 no longer reads svelte.config.js, and `#lib/*` replaces `$lib`).

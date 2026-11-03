@@ -4,7 +4,7 @@ import { render } from "vitest-browser-svelte";
 import Page from "./+page.svelte";
 
 // Mock the conversion service
-vi.mock("$lib/conversion-service", () => ({
+vi.mock("#lib/conversion-service", () => ({
   ConversionService: {
     convertImage: vi.fn(),
     convertVideo: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock("$lib/conversion-service", () => ({
 }));
 
 // Mock web utilities
-vi.mock("$lib/converters/web", () => ({
+vi.mock("#lib/converters/web", () => ({
   downloadBlob: vi.fn(),
   humanFileSize: vi.fn((size: number) => `${(size / 1024).toFixed(1)} KB`),
   renameFile: vi.fn((name: string, ext: string) => name.replace(/\.[^/.]+$/, `.${ext}`)),
@@ -24,8 +24,8 @@ describe("/+page.svelte", () => {
 
   beforeEach(async () => {
     // Setup mocks
-    mockConversionService = await import("$lib/conversion-service");
-    mockWebUtils = await import("$lib/converters/web");
+    mockConversionService = await import("#lib/conversion-service");
+    mockWebUtils = await import("#lib/converters/web");
 
     // Default mock implementations
     mockConversionService.ConversionService.convertImage.mockResolvedValue({
